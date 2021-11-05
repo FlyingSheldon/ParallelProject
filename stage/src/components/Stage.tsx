@@ -1,21 +1,53 @@
 import React, { useState } from "react";
-import { Typography, Button } from "@mui/material";
+import { Box, Grid, Stack, Button, Container } from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import { selectOriginalFile, fetchOriginalFileData } from "../store";
+import { useSelector, useDispatch } from "react-redux";
+
+const useStyles = makeStyles({
+  imgContainer: {
+    height: "100%",
+  },
+  img: {
+    minWidth: "60%",
+    maxWidth: "80%",
+  },
+});
 
 const Stage: React.FC = () => {
-  const [imgPath, setImgPath] = useState("");
-  const [imgData, setImgData] = useState("");
+  const styles = useStyles();
+  const dispatch = useDispatch();
+  const originalFile = useSelector(selectOriginalFile);
 
-  const handleOpen = async () => {
-    const res = await window.electronAPI.openImage();
-    setImgPath(res.path);
-    setImgData(res.data);
+  const handleOpen = () => {
+    dispatch(fetchOriginalFileData());
   };
 
   return (
     <>
-      <Typography variant="h3">This is the stage</Typography>
-      <Button onClick={handleOpen}>Open</Button>
-      {imgPath !== "" && <img src={imgData} />}
+      <Stack sx={{ height: "100%" }}>
+        <Grid container sx={{ p: 2 }}>
+          <Button variant="contained" onClick={handleOpen}>
+            Open
+          </Button>
+          <Box sx={{ m: 1 }} />
+          <Button variant="contained" onClick={handleOpen}>
+            Save
+          </Button>
+        </Grid>
+        <Container
+          className={styles.imgContainer}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {originalFile && (
+            <img src={originalFile.data} className={styles.img} />
+          )}
+        </Container>
+      </Stack>
     </>
   );
 };

@@ -1,5 +1,5 @@
 export interface IElectronAPI {
-    openImage: () => Promise<{ path: string, data: string }>
+    openImage: () => Promise<{ path: string, data: string }?>
 }
 
 declare global {

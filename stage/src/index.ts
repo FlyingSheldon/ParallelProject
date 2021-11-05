@@ -63,6 +63,10 @@ ipcMain.handle('open-image', async () => {
     ]
   });
 
+  if (res.canceled) {
+    return undefined
+  }
+
   const data = await fs.readFile(res.filePaths[0], { encoding: 'base64' });
 
   let dataType: string;

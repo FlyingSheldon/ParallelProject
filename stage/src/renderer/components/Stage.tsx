@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, Grid, Stack, Button, Container } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { selectOriginalFile, fetchOriginalFileData } from "../store";
@@ -23,6 +23,12 @@ const Stage: React.FC = () => {
     dispatch(fetchOriginalFileData());
   };
 
+  const handleSave = async () => {
+    if (originalFile) {
+      await window.electronAPI.saveImage(originalFile.path);
+    }
+  };
+
   return (
     <>
       <Stack sx={{ height: "100%" }}>
@@ -31,7 +37,7 @@ const Stage: React.FC = () => {
             Open
           </Button>
           <Box sx={{ m: 1 }} />
-          <Button variant="contained" onClick={handleOpen}>
+          <Button variant="contained" onClick={handleSave}>
             Save
           </Button>
         </Grid>

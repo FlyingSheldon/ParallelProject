@@ -1,4 +1,4 @@
-import { dialog, BrowserWindow } from "electron";
+import { dialog, BrowserWindow, IpcMainInvokeEvent } from "electron";
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -32,4 +32,16 @@ export const handleOpenImage = async (): Promise<OpenImageReturn> => {
         path: res.filePaths[0],
         data: `data:image/${dataType};base64,${data}`,
     }
+}
+
+export const handleSaveImage = async (event: IpcMainInvokeEvent, srcPath: string): Promise<void> => {
+    const defaultName = path.basename(srcPath)
+    const res = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow(), { defaultPath: defaultName });
+    if (res.canceled) {
+        return
+    }
+
+    const dstPath = res.filePath;
+
+    await fs.copyFile(srcPath, dstPath)
 }

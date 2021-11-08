@@ -1,0 +1,41 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"[c]": {
+			"editor.defaultFormatter": "xaver.clang-format",
+			"editor.formatOnSave": true,
+		},
+		"[cpp]": {
+			"editor.defaultFormatter": "xaver.clang-format",
+			"editor.formatOnSave": true
+		},
+		"[cu]": {
+			"editor.wordBasedSuggestions": false,
+			"editor.suggest.insertMode": "replace",
+			"editor.semanticHighlighting.enabled": true,
+			"editor.defaultFormatter": "ms-vscode.cpptools",
+			"editor.formatOnSave": true,
+		},
+		"[typescript]": {
+			"editor.formatOnSave": true,
+			"editor.defaultFormatter": "vscode.typescript-language-features"
+		},
+		"[typescriptreact]": {
+			"editor.formatOnSave": true,
+			"editor.defaultFormatter": "vscode.typescript-language-features"
+		},
+		"cmake.sourceDirectory": "${workspaceFolder}/src",
+	},
+	"extensions": {
+		"recommendations": [
+			"xaver.clang-format",
+			"ms-vscode.cpptools",
+			"ms-vscode.cmake-tools",
+			"dbaeumer.vscode-eslint"
+		]
+	},
+}

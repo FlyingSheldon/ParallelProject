@@ -28,7 +28,7 @@
 			"editor.formatOnSave": true,
 			"editor.defaultFormatter": "vscode.typescript-language-features"
 		},
-		"cmake.sourceDirectory": "${workspaceFolder}/src",
+		"cmake.sourceDirectory": "${workspaceFolder}",
 	},
 	"extensions": {
 		"recommendations": [

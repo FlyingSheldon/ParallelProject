@@ -9,7 +9,7 @@ include(CTest)
 enable_testing()
 
 add_executable(imgproc main.cpp)
-target_link_libraries(imgproc gflags::gflags)
+target_link_libraries(imgproc gflags)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

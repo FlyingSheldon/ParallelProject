@@ -29,6 +29,9 @@
 			"editor.defaultFormatter": "vscode.typescript-language-features"
 		},
 		"cmake.sourceDirectory": "${workspaceFolder}",
+		"files.associations": {
+			"ostream": "cpp"
+		},
 	},
 	"extensions": {
 		"recommendations": [

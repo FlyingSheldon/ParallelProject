@@ -1,32 +1,30 @@
-#include "flags.h"
-#include <Halide.h>
+#include "image/image.h"
+#include "util/conf.h"
+#include "util/flags.h"
 #include <cstdio>
 #include <iostream>
 
 int main(int argc, char **argv) {
-  Flags f(argc, argv);
+  Flags f(&argc, &argv);
+  Conf conf(argc, argv);
 
-  Halide::Func gradient;
-  Halide::Var x, y;
+  if (conf.confError) {
+    std::cerr << conf.confError.value() << std::endl;
+    return 1;
+  }
 
-  Halide::Expr e = x + y;
+  Image img(conf.input);
 
-  gradient(x, y) = e;
-
-  Halide::Buffer<int32_t> output = gradient.realize({800, 600});
-
-  for (int j = 0; j < output.height(); j++) {
-    for (int i = 0; i < output.width(); i++) {
-      // We can access a pixel of an Buffer object using similar
-      // syntax to defining and using functions.
-      if (output(i, j) != i + j) {
-        printf("Something went wrong!\n"
-               "Pixel %d, %d was supposed to be %d, but instead it's %d\n",
-               i, j, i + j, output(i, j));
-        return -1;
+  for (size_t y = 0; y < img.GetHeight(); y++) {
+    for (size_t x = 0; x < img.GetWidth(); x++) {
+      uint8_t *pp = img.GetPixelData(x, y);
+      for (size_t i = 0; i < img.GetPixelSize(); i++) {
+        pp[i] = std::min(255, 10 + (int)pp[i]);
       }
     }
   }
+
+  img.Save(conf.output);
 
   printf("All good\n");
 }

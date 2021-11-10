@@ -9,9 +9,10 @@
 DECLARE_bool(help);
 DECLARE_bool(h);
 DECLARE_double(brightness);
+DECLARE_string(o);
 
 class Flags {
-  const std::unordered_set<std::string> helpFlags{"help", "brightness"};
+  const std::unordered_set<std::string> helpFlags{"help", "brightness", "o"};
 
   void showHelpMessage(const char *argv0) {
     std::cout << argv0 << ": " << gflags::ProgramUsage() << std::endl;
@@ -26,13 +27,13 @@ class Flags {
   }
 
 public:
-  Flags(int argc, char **argv) {
+  Flags(int *argc, char ***argv) {
     gflags::SetUsageMessage("Usage:");
     gflags::SetVersionString("0.0.1");
-    gflags::ParseCommandLineNonHelpFlags(&argc, &argv, true);
+    gflags::ParseCommandLineNonHelpFlags(argc, argv, true);
     if (FLAGS_help || FLAGS_h) {
       FLAGS_help = false;
-      showHelpMessage(argv[0]);
+      showHelpMessage((*argv)[0]);
     }
     gflags::HandleCommandLineHelpFlags();
   }

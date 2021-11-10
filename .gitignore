@@ -34,3 +34,7 @@
 # Build folders
 /build/
 /build_release/
+
+# Test images
+*.jpeg
+*.jpg

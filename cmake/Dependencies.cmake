@@ -10,3 +10,8 @@ list(APPEND pp_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 include("cmake/External/gflags.cmake")
 list(APPEND pp_INCLUDE_DIRS PUBLIC ${GFLAGS_INCLUDE_DIRS})
 list(APPEND pp_LINKER_LIBS PUBLIC ${GFLAGS_LIBRARIES})
+
+# ---[ Halide
+find_package(LLVM REQUIRED CONFIG PATHS /usr/local/Cellar/)
+find_package(Halide REQUIRED)
+list(APPEND pp_LINKER_LIBS PRIVATE Halide::Halide)

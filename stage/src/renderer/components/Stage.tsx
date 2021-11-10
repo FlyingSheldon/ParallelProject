@@ -9,7 +9,7 @@ const useStyles = makeStyles({
     height: "100%",
   },
   img: {
-    minWidth: "60%",
+    minWidth: "50%",
     maxWidth: "80%",
   },
 });

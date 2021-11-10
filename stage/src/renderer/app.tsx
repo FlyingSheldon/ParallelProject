@@ -20,10 +20,10 @@ const App = () => {
     <>
       <Provider store={store}>
         <Grid container className={styles.app}>
-          <Grid item xs={8}>
+          <Grid item xs={12} sm={8}>
             <Stage />
           </Grid>
-          <Grid item xs={4}>
+          <Grid item xs={12} sm={4}>
             <Control />
           </Grid>
         </Grid>

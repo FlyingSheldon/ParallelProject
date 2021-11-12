@@ -1,4 +1,5 @@
 #include "image/image.h"
+#include "proc/proc.h"
 #include "util/conf.h"
 #include "util/flags.h"
 #include <cstdio>
@@ -13,16 +14,16 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  Image img(conf.input);
-
-  for (size_t y = 0; y < img.GetHeight(); y++) {
-    for (size_t x = 0; x < img.GetWidth(); x++) {
-      uint8_t *pp = img.GetPixelData(x, y);
-      for (size_t i = 0; i < img.GetPixelSize(); i++) {
-        pp[i] = std::min(255, 10 + (int)pp[i]);
-      }
-    }
+  auto imageResult = Image::OpenImage(conf.input);
+  if (const Image::ImageError *error =
+          std::get_if<Image::ImageError>(&imageResult)) {
+    std::cerr << *error << std::endl;
+    return 1;
   }
+
+  Image img = std::move(std::get<Image>(imageResult));
+
+  linear::brighten(img, 10);
 
   img.Save(conf.output);
 

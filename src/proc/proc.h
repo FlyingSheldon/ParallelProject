@@ -11,3 +11,6 @@ namespace linear {
 void brighten(Image &image, int value);
 void sharpen(Image &image, int value);
 } // namespace linear
+
+void rgbToHsv(Image &image);
+void hsvToRgb(Image &image);

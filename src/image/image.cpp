@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <math.h>   
+
 
 std::variant<Image, Image::ImageError>
 Image::OpenImage(const std::string &fileName) {
@@ -81,7 +83,8 @@ Image::OpenImage(const std::string &fileName) {
 
 Image::Image(size_t width, size_t height, size_t pixelSize, int colorSpace)
     : m_width(width), m_height(height), m_pixelSize(pixelSize),
-      m_colourSpace(colorSpace), m_bitmapData(width * height * pixelSize, 0) {}
+      m_colourSpace(colorSpace), m_bitmapData(width * height * pixelSize, 0), 
+      m_hsvData(width * height * pixelSize, 0) {}
 
 // Image::Image(const std::string &fileName) {
 //   // Creating a custom deleter for the decompressInfo pointer
@@ -149,6 +152,7 @@ Image::Image(size_t width, size_t height, size_t pixelSize, int colorSpace)
 // Copy constructor
 Image::Image(const Image &rhs) {
   m_bitmapData = rhs.m_bitmapData;
+  m_hsvData = rhs.m_hsvData;
   m_width = rhs.m_width;
   m_height = rhs.m_height;
   m_pixelSize = rhs.m_pixelSize;
@@ -157,6 +161,7 @@ Image::Image(const Image &rhs) {
 
 Image::Image(Image &&rhs) {
   m_bitmapData = std::move(rhs.m_bitmapData);
+  m_hsvData = std::move(rhs.m_hsvData);
   m_width = rhs.m_width;
   m_height = rhs.m_height;
   m_pixelSize = rhs.m_pixelSize;
@@ -251,6 +256,99 @@ uint8_t Image::GetLuminance(size_t x, size_t y) const {
 
   return static_cast<uint8_t>(r * kRLumWeight + g * kGLumWeight +
                               b * kBLumWeight);
+}
+
+double *Image::GetHSVData(size_t x, size_t y) {
+  return &m_hsvData[y * m_width * m_pixelSize + x * m_pixelSize];
+}
+
+const double *Image::GetHSVData(size_t x, size_t y) const {
+  return m_hsvData.data() + (y * m_width * m_pixelSize + x * m_pixelSize);
+}
+
+
+void Image::RGB2HSV(size_t x, size_t y) {
+  const uint8_t *p = GetPixelData(x, y);
+  double r = static_cast<double>(p[0]) / 255.0;
+  double g = static_cast<double>(p[1]) / 255.0;
+  double b = static_cast<double>(p[2]) / 255.0;
+
+  double cmax = std::max(r, std::max(g, b));
+  double cmin = std::min(r, std::min(g, b));
+  double diff = cmax - cmin;
+  double h = -1.0, s = -1.0;
+
+  if (cmax == cmin) {
+    h = 0.0;
+  } else if (cmax == r) {
+    if (g >= b) {
+      h = 60.0 * ((g - b) / diff) + 0.0;
+    } else {
+      // g < b
+      h = 60.0 * ((g - b) / diff) + 360.0;
+    }
+  } else if (cmax == g) {
+    h = 60.0 * ((b - r) / diff) + 120.0;
+  } else if (cmax == b) {
+    h = 60.0 * ((r - g) / diff) + 240.0;
+  }
+
+  if (cmax == 0){
+    s = 0.0;
+  } else {
+    s = diff / cmax;
+  }
+
+  double v = cmax;
+  
+  double *hsvx = GetHSVData(x, y);
+  hsvx[0] = h;
+  hsvx[1] = s;
+  hsvx[2] = v;
+}
+
+void Image::HSV2RGB(size_t x, size_t y) {
+  const double *hsv = GetHSVData(x, y);
+  double h = hsv[0];
+  double s = hsv[1];
+  double v = hsv[2];
+
+  int i = (int)floor(h / 60.0) % 6;
+  double f = h / 60.0 - (double)i;
+  double p = v * (1.0 - s);
+  double q = v * (1.0 - f * s);
+  double t = v * (1.0 - (1.0 - f) * s);
+  double r, g, b;
+
+  switch (i)
+  {
+  case 0:
+    r = v, g = t, b = p;
+    break;
+  case 1:
+    r = q, g = v, b = p;
+    break;
+  case 2:
+    r = p, g = v, b = t;
+    break;
+  case 3:
+    r = p, g = q, b = v;
+    break;
+  case 4:
+    r = t, g = p, b = v;
+    break;
+  case 5:
+    r = v, g = p, b = q;
+    break;
+  default:
+    break;
+  }
+
+  uint8_t *px = GetPixelData(x, y);
+  px[0] = static_cast<double> (r * 255);
+  px[1] = static_cast<double> (g * 255);
+  px[2] = static_cast<double> (b * 255);
+    
 }
 
 void Image::AddLuminance(size_t x, size_t y, int value) {

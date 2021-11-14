@@ -43,3 +43,19 @@ void brighten(Image &image, int value) {
 }
 
 } // namespace linear
+
+void rgbToHsv(Image &image) {
+  for (int y = 0; y < image.GetHeight(); y++) {
+    for (int x = 0; x < image.GetWidth(); x++) {
+      image.RGB2HSV(x, y);
+    }
+  }
+}
+
+void hsvToRgb(Image &image) {
+  for (int y = 0; y < image.GetHeight(); y++) {
+    for (int x = 0; x < image.GetWidth(); x++) {
+      image.HSV2RGB(x, y);
+    }
+  }
+}

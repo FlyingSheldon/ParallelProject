@@ -77,6 +77,9 @@ public:
   uint8_t *GetPixelData(size_t x, size_t y);
   const uint8_t *GetPixelData(size_t x, size_t y) const;
 
+  double *GetValue(size_t x, size_t y) ;
+  const double GetValue(size_t x, size_t y) const;
+
   double *GetHSVData(size_t x, size_t y);
   const double *GetHSVData(size_t x, size_t y) const;
 

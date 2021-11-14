@@ -1,5 +1,6 @@
 #include "proc.h"
 #include <limits>
+#include <math.h>   
 
 static inline uint8_t truncDown(int value) {
   return static_cast<uint8_t>(
@@ -58,4 +59,44 @@ void hsvToRgb(Image &image) {
       image.HSV2RGB(x, y);
     }
   }
+}
+
+bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth) {
+  bool ans = false;
+  double value = *image.GetValue(x, y);
+
+  if (x - 1 >= 0) {
+    double value_west = *image.GetValue(x - 1, y);
+    if (abs(value - value_west) >= eth) {
+      ans = true;
+    }
+  }
+
+  if (y - 1 >= 0) {
+    double value_north = *image.GetValue(x, y - 1);
+    if (abs(value - value_north) >= eth) {
+      ans = true;
+    }
+  }
+  return ans;
+}
+
+std::vector<bool> edgeDectect(Image &image, double eth) {
+  std::vector<bool> g(image.GetHeight() * image.GetWidth(), false);
+
+  for (int y = 0; y < image.GetHeight(); y++) {
+    for (int x = 0; x < image.GetWidth(); x++) {
+      g[y * image.GetWidth() + x] = edgeDetectPixel(image, x, y, eth);
+    }
+  }
+
+  return g;
+}
+
+bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y, int lpf) {
+  
+}
+
+std::vector<std::pair<size_t, size_t>> lowPassFilter(Image &image, std::vector<bool> g, int lpf) {
+  
 }

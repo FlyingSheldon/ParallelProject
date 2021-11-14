@@ -266,6 +266,15 @@ const double *Image::GetHSVData(size_t x, size_t y) const {
   return m_hsvData.data() + (y * m_width * m_pixelSize + x * m_pixelSize);
 }
 
+double *Image::GetValue(size_t x, size_t y) {
+  double *hsv = GetHSVData(x, y);
+  return &hsv[2];
+}
+
+const double Image::GetValue(size_t x, size_t y) const {
+  const double *hsv = GetHSVData(x, y);
+  return hsv[2];
+}
 
 void Image::RGB2HSV(size_t x, size_t y) {
   const uint8_t *p = GetPixelData(x, y);

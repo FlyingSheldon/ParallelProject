@@ -77,11 +77,11 @@ public:
   uint8_t *GetPixelData(size_t x, size_t y);
   const uint8_t *GetPixelData(size_t x, size_t y) const;
 
-  double *GetValue(size_t x, size_t y) ;
+  double *GetValueData(size_t x, size_t y) ;
   const double GetValue(size_t x, size_t y) const;
 
   double *GetHSVData(size_t x, size_t y);
-  const double *GetHSVData(size_t x, size_t y) const;
+  const double *GetHSV(size_t x, size_t y) const;
 
   void RGB2HSV(size_t x, size_t y);
   void HSV2RGB(size_t x, size_t y);

@@ -63,32 +63,40 @@ void hsvToRgb(Image &image) {
 
 bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth) {
   bool ans = false;
-  double value = *image.GetValueData(x, y);
+  double value = image.GetValue(x, y);
 
-  if (x - 1 >= 0) {
-    double value_west = *image.GetValueData(x - 1, y);
+
+  if (x >= 1) {
+    double value_west = image.GetValue(x - 1, y);
     if (abs(value - value_west) >= eth) {
       ans = true;
     }
   }
+  
+  if (y >= 1) {
+    double value_north = image.GetValue(x, y - 1);
 
-  if (y - 1 >= 0) {
-    double value_north = *image.GetValueData(x, y - 1);
     if (abs(value - value_north) >= eth) {
       ans = true;
     }
   }
+
   return ans;
 }
 
 std::vector<bool> edgeDetect(Image &image, double eth) {
   std::vector<bool> g(image.GetHeight() * image.GetWidth(), false);
-  for (int y = 0; y < image.GetHeight(); y++) {
-    for (int x = 0; x < image.GetWidth(); x++) {
-      g[y * image.GetWidth() + x] = edgeDetectPixel(image, x, y, eth);
+  for (size_t y = 0; y < image.GetHeight(); y++) {
+    for (size_t x = 0; x < image.GetWidth(); x++) {
+      int index = y * image.GetWidth() + x;
+      if (edgeDetectPixel(image, x, y, eth)) {
+        g[index] = true;
+        printf("add edge x:%zu, y:%zu\n", x, y);
+      }
     }
   }
   return g;
+
 }
 
 bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y, int lpf) {
@@ -97,7 +105,7 @@ bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y, i
     size_t newX = x + dx[i];
     size_t newY = y + dy[i];
     if (newX >= 0 && newX < image.GetWidth() && newY >= 0 && newY < image.GetHeight()) {
-      int index = y * image.GetWidth() + x;
+      int index = newY * image.GetWidth() + newX;
       if (g[index]) cnt++;
     }
   }
@@ -105,13 +113,68 @@ bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y, i
 }
 
 void lowPassFilter(Image &image, std::vector<bool> &g, int lpf) {
+  printf("in lpf\n");
+
   std::vector<bool> g_copy(g);
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
-      if (!lowPassFilterPixel(image, g_copy, x, y, lpf)) {
-        int index = y * image.GetWidth() + x;
+      int index = y * image.GetWidth() + x;
+      if (g_copy[index] && !lowPassFilterPixel(image, g_copy, x, y, lpf)) {
         g[index] = false;     // remove isolated pixels
+        printf("remove x:%d, y:%d\n", x, y);
       }
+    }
+  }
+}
+
+double additiveMaginitude(Image &image) {
+  double max = std::numeric_limits<double>::min();
+  double min = std::numeric_limits<double>::max();
+  double total = 0;
+
+  for (int y = 0; y < image.GetHeight(); y++) {
+    for (int x = 0; x < image.GetWidth(); x++) {
+      const double value = image.GetValue(x, y);
+      max = std::max(max, value);
+      min = std::min(min, value);
+      total += value;
+    }
+  }
+
+  double mid = (max + min) / 2.0;
+  double avg = (total / (double) image.GetHeight()) / (double) image.GetWidth();
+
+  double delta = (max / 8.0) * (avg / mid);
+  printf("max:%f, mid:%f, avg:%f, delta: %f\n", max, mid, avg, delta);
+  return delta;
+}
+
+double computelocalMean(Image &image, size_t x, size_t y) {
+  double localSum = 0.0;
+  int localCnt = 0;
+  for (int i = 0; i < 8; i++) {
+    size_t newX = x + dx[i];
+    size_t newY = y + dy[i];
+    if (newX >= 0 && newX < image.GetWidth() && newY >= 0 && newY < image.GetHeight()) {
+      localSum += image.GetValue(newX, newY);
+      localCnt ++;
+    }
+  }
+  double localMean = localSum / (double) localCnt;
+  return localMean;
+}
+
+void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta) {
+  for (int y = 0; y < image.GetHeight(); y++) {
+    for (int x = 0; x < image.GetWidth(); x++) {
+      int index = y * image.GetWidth() + x;
+      if (!g[index]) continue;  // nonedge pixels are kept unaltered
+
+      double localMean = computelocalMean(image, x, y);
+      double *value = image.GetValueData(x, y);
+
+      double factor = *value < localMean ? (-x) / localMean : localMean / x;
+      *value += s * delta * factor;
     }
   }
 }

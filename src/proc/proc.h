@@ -37,3 +37,16 @@ bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth);
  */
 void lowPassFilter(Image &image, std::vector<bool> &g, int lpf);
 bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y, int lpf);
+
+double additiveMaginitude(Image &image);
+double computelocalMean(Image &image, size_t x, size_t y);
+
+/**
+ * @brief 
+ * 
+ * @param[out] image 
+ * @param g            HVD image with LPF
+ * @param s            scaling factor controls degree of sharpness, [0, 1]
+ * @param delta        additive magnitude
+ */
+void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta);

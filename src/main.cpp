@@ -24,9 +24,9 @@ int main(int argc, char **argv) {
   Image img = std::move(std::get<Image>(imageResult));
 
   // Parameter
-  double eth = 0.03;
+  double eth = 0.07;
   int lpf = 2;
-  double s = 1;  // scaling factor
+  double s = 0.5;  // scaling factor
 
 
   // linear::brighten(img, 10);

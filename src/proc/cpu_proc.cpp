@@ -176,6 +176,14 @@ void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta) {
       double factor = *value < localMean ? (- *value) / localMean : localMean / *value;
       double value_change = s * delta * factor;
       *value = *value + value_change;
+
+      if (*value > 1) {
+        *value = 1;
+      }
+
+      if (*value < 0) {
+        *value = 0;
+      }
     }
   }
 }

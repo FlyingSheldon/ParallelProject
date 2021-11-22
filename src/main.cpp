@@ -26,8 +26,7 @@ int main(int argc, char **argv) {
   // Parameter
   double eth = 0.07;
   int lpf = 2;
-  double s = 0.5;  // scaling factor
-
+  double s = conf.sharpness; // scaling factor
 
   // linear::brighten(img, 10);
 

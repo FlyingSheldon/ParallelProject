@@ -13,4 +13,11 @@ Conf::Conf(int argc, char **argv) {
     confError = "No output file specified";
     return;
   }
+
+  sharpness = FLAGS_sharpness;
+  if (sharpness > 1.0) {
+    sharpness = 1.0;
+  } else if (sharpness < 0.0) {
+    sharpness = 0.0;
+  }
 }

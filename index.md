@@ -27,8 +27,8 @@ This statistical stage makes the program hard to parallelize because one pixel d
 - Computers: GHC machines
 - Code: We will use our code from Assignment 2 as the skeleton for CUDA initialization. 
 - Sharpening: 
-  - [CS448f: Image Processing For Photography and Vision](https://web.stanford.edu/class/cs448f/lectures/2.1/Sharpening.pdf)
-  - [Image Filtering: Noise Removal, Sharpening, Deblurring](https://eeweb.engineering.nyu.edu/~yao/EE3414/image_filtering.pdf)
+  - [An Image Enhancement Technique Combining Sharpening and Noise Reduction](https://ieeexplore.ieee.org/iel5/19/22392/01044761.pdf?casa_token=e8vIWpGLM7IAAAAA:lCyy04GTVAMH1lb3S6U001CrO0n6M8qj5vPwGHGwocgQM2uys6NIGJaR5Cp_8BZytX5Wf-RF1w)
+  - [An Efficient and Self-Adapted Approach to the Sharpening of Color Images](https://www.hindawi.com/journals/tswj/2013/105945/)
 - Halide
   - [Halide Tutorials](https://halide-lang.org/tutorials/tutorial_introduction.html)   
   - [Halide Examples](https://github.com/halide/Halide/tree/master/apps)
@@ -40,6 +40,9 @@ This statistical stage makes the program hard to parallelize because one pixel d
 ## 5 Goals and deliverables
 ### 5.1 Plan to achieve
 The basic deliverables that we want to achieve are a working CUDA implementation and a working Halide implementation of image sharpening. The comparison of CUDA and Halide will also be analysed as well. 
+
+*During the implementation, we notice that the user interface is not friendly. So we plan to build a GUI for this project.*
+
 ### 5.2 Hope to achieve
 If everything goes ahead of the plan, we plan to try to tackle the highlight/shadow adjustment, which needs quite some time to figure out how to parallelize the first step of categorizing the pixels. 
 
@@ -50,13 +53,17 @@ GPU is designed for image processing related problems and Halide is designed to 
 
 ## 7 Schedule
 
-| Time      | Work |
-| ----------- | ----------- |
-| Week 1(11/4 - 11/11)     | Research on sharpening algorithms. Learn to use Halide. Complete a serial version of image sharpening on C++.     |
-| Week 2(11/11 - 11/18) | Complete a CUDA implementation that can reasonably scale. |
-| Week 3(11/18 - 11/25) | Complete a working Halide implementation. |
-| Week 4(11/25 - 12/2) | Try to optimize the implementation from both approaches.|
-| Week 5(12/2 - 12/9) | Report the performance gain and analyze the difference between C++ and domain specific language. If time permits, explore highlight/shadow adjust.  |
+| Week | Time      | Work |
+| --------------- |------------- | ----------- |
+| Week 1 | 11/4 - 11/11     | Waiting for feedback from instructors. |
+| Week 2 | 11/11 - 11/18 | Research on sharpening algorithms. Set up workspace and enviroment. |
+| Week 3-1 | 11/18 - 11/21 | Complete a serial version of image sharpening on C++. Finish Milestone report. |
+| Week 3-2 | 11/21 - 11/25 | Start working on Halide (Xinna) and CUDA (Jiahua) implementations. |
+| Week 4-1 | 11/25 - 11/28 | Finish naive Halide (Xinna) and CUDA (Jiahua) implementations. |
+| Week 4-2 | 11/28 - 12/2 | Try to optimize Halide (Xinna) and CUDA (Jiahua) implementations.|
+| Week 5-1 | 12/2 - 12/5 | Finish optimizaing Halide (Xinna) and CUDA (Jiahua) implementations. |
+| Week 5-2 | 12/5 - 12/9 | Report the performance gain and analyze the difference between C++ and domain specific language. If time permits, explore highlight/shadow adjust.  |
 
-
+## Project Milestone
+The project milestone report can be found [here](https://docs.google.com/document/d/1HQVhltZfXv3lvUDZ7W8OBGb-d31G9bimXVihOkDngkw/edit?usp=sharing).
 

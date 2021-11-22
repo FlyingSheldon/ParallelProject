@@ -1,6 +1,6 @@
 #include "proc.h"
 #include <limits>
-#include <math.h>   
+#include <math.h>
 
 static inline uint8_t truncDown(int value) {
   return static_cast<uint8_t>(
@@ -65,14 +65,13 @@ bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth) {
   bool ans = false;
   double value = image.GetValue(x, y);
 
-
   if (x >= 1) {
     double value_west = image.GetValue(x - 1, y);
     if (abs(value - value_west) >= eth) {
       ans = true;
     }
   }
-  
+
   if (y >= 1) {
     double value_north = image.GetValue(x, y - 1);
 
@@ -96,17 +95,19 @@ std::vector<bool> edgeDetect(Image &image, double eth) {
     }
   }
   return g;
-
 }
 
-bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y, int lpf) {
+bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y,
+                        int lpf) {
   int cnt = 0;
   for (int i = 0; i < 8; i++) {
     size_t newX = x + dx[i];
     size_t newY = y + dy[i];
-    if (newX >= 0 && newX < image.GetWidth() && newY >= 0 && newY < image.GetHeight()) {
+    if (newX >= 0 && newX < image.GetWidth() && newY >= 0 &&
+        newY < image.GetHeight()) {
       int index = newY * image.GetWidth() + newX;
-      if (g[index]) cnt++;
+      if (g[index])
+        cnt++;
     }
   }
   return cnt >= lpf;
@@ -120,7 +121,7 @@ void lowPassFilter(Image &image, std::vector<bool> &g, int lpf) {
     for (int x = 0; x < image.GetWidth(); x++) {
       int index = y * image.GetWidth() + x;
       if (g_copy[index] && !lowPassFilterPixel(image, g_copy, x, y, lpf)) {
-        g[index] = false;     // remove isolated pixels
+        g[index] = false; // remove isolated pixels
         // printf("remove x:%d, y:%d\n", x, y);
       }
     }
@@ -142,7 +143,7 @@ double additiveMaginitude(Image &image) {
   }
 
   double mid = (max + min) / 2.0;
-  double avg = (total / (double) image.GetHeight()) / (double) image.GetWidth();
+  double avg = (total / (double)image.GetHeight()) / (double)image.GetWidth();
 
   double delta = (max / 8.0) * (avg / mid);
   printf("max:%f, mid:%f, avg:%f, delta: %f\n", max, mid, avg, delta);
@@ -155,12 +156,13 @@ double computelocalMean(Image &image, size_t x, size_t y) {
   for (int i = 0; i < 8; i++) {
     size_t newX = x + dx[i];
     size_t newY = y + dy[i];
-    if (newX >= 0 && newX < image.GetWidth() && newY >= 0 && newY < image.GetHeight()) {
+    if (newX >= 0 && newX < image.GetWidth() && newY >= 0 &&
+        newY < image.GetHeight()) {
       localSum += image.GetValue(newX, newY);
-      localCnt ++;
+      localCnt++;
     }
   }
-  double localMean = localSum / (double) localCnt;
+  double localMean = localSum / (double)localCnt;
   return localMean;
 }
 
@@ -168,12 +170,14 @@ void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta) {
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
       int index = y * image.GetWidth() + x;
-      if (!g[index]) continue;  // nonedge pixels are kept unaltered
+      if (!g[index])
+        continue; // nonedge pixels are kept unaltered
 
       double localMean = computelocalMean(image, x, y);
       double *value = image.GetValueData(x, y);
 
-      double factor = *value < localMean ? (- *value) / localMean : localMean / *value;
+      double factor =
+          *value < localMean ? (-*value) / localMean : localMean / *value;
       double value_change = s * delta * factor;
       *value = *value + value_change;
 

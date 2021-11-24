@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
     break;
   case Impl::HALIDE:
     proc = std::make_unique<HalideImageProc>();
+    break;
   default:
     proc = std::make_unique<LinearImageProc>();
     break;

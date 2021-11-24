@@ -2,6 +2,14 @@
 #include <limits>
 #include <math.h>
 
+void LinearImageProc::Brighten(Image &img, double value) {
+  linear::brighten(img, value);
+}
+
+void LinearImageProc::Sharpen(Image &img, double value) {
+  linear::sharpen(img, value);
+}
+
 namespace linear {
 
 void brighten(Image &image, double value) {

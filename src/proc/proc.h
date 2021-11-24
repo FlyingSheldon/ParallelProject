@@ -6,7 +6,13 @@ const int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
 class ImageProc {
 public:
-  virtual void Brigten(Image &image, double value);
+  virtual void Brighten(Image &image, double value){};
+  virtual void Sharpen(Image &image, double value){};
+};
+
+class LinearImageProc : public ImageProc {
+public:
+  virtual void Brighten(Image &image, double value);
   virtual void Sharpen(Image &image, double value);
 };
 

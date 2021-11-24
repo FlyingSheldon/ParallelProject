@@ -23,4 +23,12 @@ Conf::Conf(int argc, char **argv) {
   }
 
   brightness = std::fabs(FLAGS_brightness);
+
+  if (FLAGS_impl == "cuda") {
+    impl = Impl::CUDA;
+  } else if (FLAGS_impl == "halide") {
+    impl = Impl::HALIDE;
+  } else {
+    impl = Impl::LINEAR;
+  }
 }

@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(ExternalProject)
 include(GNUInstallDirs)
+include(CheckLanguage)
 
 include(cmake/Dependencies.cmake)
 

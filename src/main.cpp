@@ -23,29 +23,13 @@ int main(int argc, char **argv) {
 
   Image img = std::move(std::get<Image>(imageResult));
 
-  // Parameter
-  double eth = 0.07;
-  int lpf = 2;
-  double s = conf.sharpness; // scaling factor
+  if (conf.brightness != 1.0) {
+    linear::brighten(img, conf.brightness);
+  }
 
-  // linear::brighten(img, 10);
-
-  rgbToHsv(img);
-  printf("rgbToHsv\n");
-
-  std::vector<bool> g = edgeDetect(img, eth);
-  printf("edgeDetect\n");
-
-  lowPassFilter(img, g, lpf);
-  printf("lpf\n");
-
-  double delta = additiveMaginitude(img);
-  printf("delta\n");
-  edgeSharpen(img, g, s, delta);
-  printf("edgeSharpen\n");
-
-  hsvToRgb(img);
-  printf("hsvToRgb\n");
+  if (conf.sharpness != 0.0) {
+    linear::sharpen(img, conf.sharpness);
+  }
 
   img.Save(conf.output);
 

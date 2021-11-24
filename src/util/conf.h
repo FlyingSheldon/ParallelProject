@@ -5,7 +5,7 @@
 struct Conf {
   std::string input;
   std::string output;
-  double sharpness;
+  double sharpness, brightness;
   std::optional<std::string> confError;
 
   Conf(int argc, char **argv);

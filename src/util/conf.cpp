@@ -1,5 +1,6 @@
 #include "conf.h"
 #include "flags.h"
+#include <cmath>
 
 Conf::Conf(int argc, char **argv) {
   if (argc < 2) {
@@ -20,4 +21,6 @@ Conf::Conf(int argc, char **argv) {
   } else if (sharpness < 0.0) {
     sharpness = 0.0;
   }
+
+  brightness = std::fabs(FLAGS_brightness);
 }

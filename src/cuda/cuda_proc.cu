@@ -9,7 +9,8 @@ void cudaBrighten(uint8_t *img, size_t size, size_t pixelSize, double value) {
 
   cudaMemcpy(deviceImg, img, size * pixelSize, cudaMemcpyHostToDevice);
 
-  size_t blocksPerGrid = (size + kThreadPerBlock - 1) / kThreadPerBlock;
+  size_t blocksPerGrid =
+      (size * pixelSize + kThreadPerBlock - 1) / kThreadPerBlock;
   brighten<<<blocksPerGrid, kThreadPerBlock>>>(deviceImg, size, pixelSize,
                                                value);
   cudaMemcpy(img, deviceImg, size * pixelSize, cudaMemcpyDeviceToHost);

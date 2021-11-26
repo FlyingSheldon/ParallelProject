@@ -5,11 +5,10 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <math.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <math.h>   
-
 
 std::variant<Image, Image::ImageError>
 Image::OpenImage(const std::string &fileName) {
@@ -83,7 +82,7 @@ Image::OpenImage(const std::string &fileName) {
 
 Image::Image(size_t width, size_t height, size_t pixelSize, int colorSpace)
     : m_width(width), m_height(height), m_pixelSize(pixelSize),
-      m_colourSpace(colorSpace), m_bitmapData(width * height * pixelSize, 0), 
+      m_colourSpace(colorSpace), m_bitmapData(width * height * pixelSize, 0),
       m_hsvData(width * height * pixelSize, 0) {}
 
 // Image::Image(const std::string &fileName) {
@@ -293,7 +292,6 @@ void Image::RGB2HSV(size_t x, size_t y) {
     if (g >= b) {
       h = 60.0 * ((g - b) / diff) + 0.0;
     } else {
-      // g < b
       h = 60.0 * ((g - b) / diff) + 360.0;
     }
   } else if (cmax == g) {
@@ -302,14 +300,13 @@ void Image::RGB2HSV(size_t x, size_t y) {
     h = 60.0 * ((r - g) / diff) + 240.0;
   }
 
-  if (cmax == 0){
+  if (cmax == 0) {
     s = 0.0;
   } else {
     s = diff / cmax;
   }
 
   double v = cmax;
-  
   double *hsvx = GetHSVData(x, y);
   hsvx[0] = h;
   hsvx[1] = s;
@@ -329,8 +326,7 @@ void Image::HSV2RGB(size_t x, size_t y) {
   double t = v * (1.0 - (1.0 - f) * s);
   double r, g, b;
 
-  switch (i)
-  {
+  switch (i) {
   case 0:
     r = v, g = t, b = p;
     break;
@@ -354,10 +350,9 @@ void Image::HSV2RGB(size_t x, size_t y) {
   }
 
   uint8_t *px = GetPixelData(x, y);
-  px[0] = static_cast<double> (r * 255);
-  px[1] = static_cast<double> (g * 255);
-  px[2] = static_cast<double> (b * 255);
-    
+  px[0] = static_cast<double>(r * 255);
+  px[1] = static_cast<double>(g * 255);
+  px[2] = static_cast<double>(b * 255);
 }
 
 void Image::AddLuminance(size_t x, size_t y, int value) {

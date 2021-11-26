@@ -11,5 +11,6 @@ void CudaImageProc::Brighten(Image &img, double value) {
 }
 
 void CudaImageProc::Sharpen(Image &img, double value) {
-  std::cout << "Brightened by CUDA" << std::endl;
+  cudaSharpen(img.GetPixelData(0, 0), img.GetPixelSize(), img.GetWidth(),
+              img.GetHeight(), value, 0.07, 2);
 }

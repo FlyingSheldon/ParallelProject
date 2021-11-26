@@ -5,7 +5,7 @@ if (CMAKE_CUDA_COMPILER)
 
     find_package(CUDA REQUIRED)
 
-    add_library(pp_cuda STATIC cuda_proc.cu proc.cu)
+    add_library(pp_cuda STATIC cuda_proc.cu proc.cu img_helper.cu)
     set_target_properties(pp_cuda PROPERTIES CUDA_ARCHITECTURES "75")
     set_target_properties(pp_cuda PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(pp_cuda PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)

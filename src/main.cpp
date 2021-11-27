@@ -41,6 +41,11 @@ int main(int argc, char **argv) {
     break;
   }
 
+  if (!proc->IsSupported()) {
+    std::cerr << proc->Name() << " is not supported in this binary"
+              << std::endl;
+  }
+
   auto brightStart = Timer::Now();
   if (conf.brightness != 1.0) {
     proc->Brighten(img, conf.brightness);

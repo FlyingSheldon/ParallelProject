@@ -2,11 +2,10 @@
 #include <cstdlib>
 #include <iostream>
 
-CudaImageProc::CudaImageProc() {
-  std::cerr << "CUDA not supported in this binary" << std::endl;
-  exit(1);
-}
+CudaImageProc::CudaImageProc() {}
 
 void CudaImageProc::Brighten(Image &img, double value) {}
 
 void CudaImageProc::Sharpen(Image &img, double value) {}
+
+bool CudaImageProc::IsSupported() const { return false; }

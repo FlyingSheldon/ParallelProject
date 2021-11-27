@@ -6,14 +6,18 @@ const int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
 class ImageProc {
 public:
-  virtual void Brighten(Image &image, double value){};
-  virtual void Sharpen(Image &image, double value){};
+  virtual void Brighten(Image &image, double value) {}
+  virtual void Sharpen(Image &image, double value) {}
+  virtual bool IsSupported() const { return false; }
+  virtual std::string Name() const { return ""; }
 };
 
 class LinearImageProc : public ImageProc {
 public:
   virtual void Brighten(Image &image, double value);
   virtual void Sharpen(Image &image, double value);
+  virtual bool IsSupported() const { return true; }
+  virtual std::string Name() const { return "linear"; }
 };
 
 namespace linear {

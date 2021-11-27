@@ -10,3 +10,5 @@ void HalideImageProc::Brighten(Image &img, double value) {
 void HalideImageProc::Sharpen(Image &img, double value) {
   std::cout << "Brightened by Halide" << std::endl;
 }
+
+bool HalideImageProc::IsSupported() const { return true; }

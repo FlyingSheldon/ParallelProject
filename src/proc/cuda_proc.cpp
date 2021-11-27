@@ -14,3 +14,5 @@ void CudaImageProc::Sharpen(Image &img, double value) {
   cudaSharpen(img.GetPixelData(0, 0), img.GetPixelSize(), img.GetWidth(),
               img.GetHeight(), value, 0.07, 2);
 }
+
+bool CudaImageProc::IsSupported() const { return true; }

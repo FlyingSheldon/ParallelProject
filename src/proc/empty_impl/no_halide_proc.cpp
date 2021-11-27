@@ -2,11 +2,10 @@
 #include <cstdlib>
 #include <iostream>
 
-HalideImageProc::HalideImageProc() {
-  std::cerr << "Halide not supported in this binary" << std::endl;
-  exit(1);
-}
+HalideImageProc::HalideImageProc() {}
 
 void HalideImageProc::Brighten(Image &img, double value) {}
 
 void HalideImageProc::Sharpen(Image &img, double value) {}
+
+bool HalideImageProc::IsSupported() const { return false; }

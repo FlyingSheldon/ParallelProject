@@ -11,3 +11,5 @@ void CudaImageProc::Brighten(Image &img, double value) {
 void CudaImageProc::Sharpen(Image &img, double value) {
   std::cout << "Brightened by CUDA" << std::endl;
 }
+
+bool CudaImageProc::IsSupported() const { return true; }

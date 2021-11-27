@@ -29,7 +29,7 @@ __device__ double3 rgbToHsv(uchar3 px) {
   return make_double3(h, s, cmax);
 }
 
-__device__ uchar3 hsvToRbg(double3 px) {
+__device__ uchar3 hsvToRgb(double3 px) {
   double h = px.x;
   double s = px.y;
   double v = px.z;

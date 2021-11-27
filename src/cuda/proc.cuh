@@ -6,6 +6,10 @@ constexpr size_t kBlockEdgeSize = 16;
 __device__ const size_t kDBlockEdgeSize = 16;
 constexpr size_t kThreadPerBlock = kBlockEdgeSize * kBlockEdgeSize;
 
+struct ValueMinMaxSum {
+  unsigned long long min, max, sum;
+};
+
 __global__ void sayHi();
 
 __global__ void brighten(uint8_t *img, size_t size, size_t pixelSize,
@@ -16,13 +20,10 @@ __global__ void sharpen(uint8_t *img, size_t size, size_t pixelSize,
                         double lpf);
 
 __global__ void edgeSharpen(double *hsv, size_t width, size_t height,
-                            double eth, int lpf, uint8_t *edges);
+                            double value, double eth, int lpf, uint8_t *edges,
+                            ValueMinMaxSum *vmms, uint8_t *img);
 
 __global__ void writeEdgeToImage(uint8_t *img, uint8_t *edges, size_t size);
-
-struct ValueMinMaxSum {
-  int min, max, sum;
-};
 
 __device__ inline void minMaxSum(volatile ValueMinMaxSum &lhs,
                                  volatile ValueMinMaxSum &rhs) {

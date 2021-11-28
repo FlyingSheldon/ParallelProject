@@ -2,45 +2,39 @@
 #include <limits>
 #include <math.h>
 
-static inline uint8_t truncDown(int value) {
-  return static_cast<uint8_t>(
-      std::min(value, static_cast<int>(std::numeric_limits<uint8_t>::max())));
+void LinearImageProc::Brighten(Image &img, double value) {
+  linear::brighten(img, value);
 }
 
-static inline uint8_t truncUp(int value) {
-  return static_cast<uint8_t>(std::max(value, 0));
-}
-
-static void brigtenImpl(Image &image, int value) {
-  for (int y = 0; y < image.GetHeight(); y++) {
-    for (int x = 0; x < image.GetWidth(); x++) {
-      uint8_t *px = image.GetPixelData(x, y);
-      px[0] = truncDown(static_cast<int>(px[0]) + value);
-      px[1] = truncDown(static_cast<int>(px[1]) + value);
-      px[2] = truncDown(static_cast<int>(px[2]) + value);
-    }
-  }
-}
-
-static void darkenImpl(Image &image, int value) {
-  for (int y = 0; y < image.GetHeight(); y++) {
-    for (int x = 0; x < image.GetWidth(); x++) {
-      uint8_t *px = image.GetPixelData(x, y);
-      px[0] = truncUp(static_cast<int>(px[0]) - value);
-      px[1] = truncUp(static_cast<int>(px[1]) - value);
-      px[2] = truncUp(static_cast<int>(px[2]) - value);
-    }
-  }
+void LinearImageProc::Sharpen(Image &img, double value) {
+  linear::sharpen(img, value);
 }
 
 namespace linear {
 
-void brighten(Image &image, int value) {
-  if (value > 0) {
-    brigtenImpl(image, value);
-  } else {
-    darkenImpl(image, -value);
+void brighten(Image &image, double value) {
+  for (size_t y = 0; y < image.GetHeight(); y++) {
+    for (size_t x = 0; x < image.GetWidth(); x++) {
+      uint8_t *p = image.GetPixelData(x, y);
+      p[0] = static_cast<uint8_t>(
+          std::min(255.0, static_cast<double>(p[0]) * value));
+      p[1] = static_cast<uint8_t>(
+          std::min(255.0, static_cast<double>(p[1]) * value));
+      p[2] = static_cast<uint8_t>(
+          std::min(255.0, static_cast<double>(p[2]) * value));
+    }
   }
+}
+
+void sharpen(Image &img, double value) {
+  double eth = 0.07;
+  int lpf = 2;
+  rgbToHsv(img);
+  std::vector<bool> g = edgeDetect(img, eth);
+  lowPassFilter(img, g, lpf);
+  double delta = additiveMaginitude(img);
+  edgeSharpen(img, g, value, delta);
+  hsvToRgb(img);
 }
 
 } // namespace linear

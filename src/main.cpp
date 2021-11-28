@@ -1,9 +1,12 @@
 #include "image/image.h"
+#include "proc/cuda_proc.h"
+#include "proc/halide_proc.h"
 #include "proc/proc.h"
 #include "util/conf.h"
 #include "util/flags.h"
 #include <cstdio>
 #include <iostream>
+#include <memory>
 
 int main(int argc, char **argv) {
   Flags f(&argc, &argv);
@@ -23,31 +26,32 @@ int main(int argc, char **argv) {
 
   Image img = std::move(std::get<Image>(imageResult));
 
-  // Parameter
-  double eth = 0.07;
-  int lpf = 2;
-  double s = conf.sharpness; // scaling factor
+  std::unique_ptr<ImageProc> proc;
 
-  // linear::brighten(img, 10);
+  switch (conf.impl) {
+  case Impl::CUDA:
+    proc = std::make_unique<CudaImageProc>();
+    break;
+  case Impl::HALIDE:
+    proc = std::make_unique<HalideImageProc>();
+    break;
+  default:
+    proc = std::make_unique<LinearImageProc>();
+    break;
+  }
 
-  rgbToHsv(img);
-  printf("rgbToHsv\n");
+  if (!proc->IsSupported()) {
+    std::cerr << proc->Name() << " is not supported in this binary"
+              << std::endl;
+  }
 
-  std::vector<bool> g = edgeDetect(img, eth);
-  printf("edgeDetect\n");
+  if (conf.brightness != 1.0) {
+    proc->Brighten(img, conf.brightness);
+  }
 
-  lowPassFilter(img, g, lpf);
-  printf("lpf\n");
-
-  double delta = additiveMaginitude(img);
-  printf("delta\n");
-  edgeSharpen(img, g, s, delta);
-  printf("edgeSharpen\n");
-
-  hsvToRgb(img);
-  printf("hsvToRgb\n");
+  if (conf.sharpness != 0.0) {
+    proc->Sharpen(img, conf.sharpness);
+  }
 
   img.Save(conf.output);
-
-  printf("All good\n");
 }

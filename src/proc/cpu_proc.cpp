@@ -91,7 +91,7 @@ std::vector<bool> edgeDetect(Image &image, double eth) {
   return g;
 }
 
-bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y,
+bool lowPassFilterPixel(Image &image, std::vector<bool> &g, size_t x, size_t y,
                         int lpf) {
   int cnt = 0;
   for (int i = 0; i < 8; i++) {
@@ -160,7 +160,7 @@ double computelocalMean(Image &image, size_t x, size_t y) {
   return localMean;
 }
 
-void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta) {
+void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta) {
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
       int index = y * image.GetWidth() + x;

@@ -1,8 +1,12 @@
 #include "image/image.h"
+#include "proc/cuda_proc.h"
+#include "proc/halide_proc.h"
+#include "proc/proc.h"
 #include "util/conf.h"
 #include "util/flags.h"
 #include <cstdio>
 #include <iostream>
+#include <memory>
 
 int main(int argc, char **argv) {
   Flags f(&argc, &argv);
@@ -13,18 +17,41 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  Image img(conf.input);
+  auto imageResult = Image::OpenImage(conf.input);
+  if (const Image::ImageError *error =
+          std::get_if<Image::ImageError>(&imageResult)) {
+    std::cerr << *error << std::endl;
+    return 1;
+  }
 
-  for (size_t y = 0; y < img.GetHeight(); y++) {
-    for (size_t x = 0; x < img.GetWidth(); x++) {
-      uint8_t *pp = img.GetPixelData(x, y);
-      for (size_t i = 0; i < img.GetPixelSize(); i++) {
-        pp[i] = std::min(255, 10 + (int)pp[i]);
-      }
-    }
+  Image img = std::move(std::get<Image>(imageResult));
+
+  std::unique_ptr<ImageProc> proc;
+
+  switch (conf.impl) {
+  case Impl::CUDA:
+    proc = std::make_unique<CudaImageProc>();
+    break;
+  case Impl::HALIDE:
+    proc = std::make_unique<HalideImageProc>();
+    break;
+  default:
+    proc = std::make_unique<LinearImageProc>();
+    break;
+  }
+
+  if (!proc->IsSupported()) {
+    std::cerr << proc->Name() << " is not supported in this binary"
+              << std::endl;
+  }
+
+  if (conf.brightness != 1.0) {
+    proc->Brighten(img, conf.brightness);
+  }
+
+  if (conf.sharpness != 0.0) {
+    proc->Sharpen(img, conf.sharpness);
   }
 
   img.Save(conf.output);
-
-  printf("All good\n");
 }

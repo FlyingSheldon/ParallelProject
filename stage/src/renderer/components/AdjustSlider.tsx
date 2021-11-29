@@ -14,14 +14,18 @@ export interface AdjustSliderProps {
   defaultValue?: number;
   min?: number;
   max?: number;
+  onChangeCommitted?: (v: number) => void;
   label: string;
 }
+
+const defaultChangeCommitedHandler: (v: number) => void = () => { return }
 
 export const AdjustSlider: React.FC<AdjustSliderProps> = ({
   label,
   defaultValue = 50,
   min = 0,
   max = 100,
+  onChangeCommitted = defaultChangeCommitedHandler
 }) => {
   const styles = useStyles();
   const [value, setValue] = useState<number>(defaultValue);
@@ -33,6 +37,10 @@ export const AdjustSlider: React.FC<AdjustSliderProps> = ({
     setValue(newValue);
   };
 
+  const handleChangeComitted = (event: Event, newValue: number) => {
+    onChangeCommitted(newValue)
+  }
+
   return (
     <>
       <div className={styles.line}>
@@ -41,7 +49,14 @@ export const AdjustSlider: React.FC<AdjustSliderProps> = ({
           {fmtValue}
         </Typography>
       </div>
-      <Slider value={value} min={min} max={max} step={step} onChange={handleChange} />
+      <Slider
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={handleChange}
+        onChangeCommitted={handleChangeComitted}
+      />
     </>
   );
 };

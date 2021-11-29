@@ -5,6 +5,7 @@ import { ThemeProvider, Grid, CssBaseline } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import Stage from "./components/Stage";
 import Control from "./components/Control";
+import ImageProcessor from "./components/ImageProcessor";
 import { Provider } from "react-redux";
 import store from "./store/store";
 
@@ -19,6 +20,7 @@ const App = () => {
   return (
     <>
       <Provider store={store}>
+        <ImageProcessor />
         <Grid container className={styles.app}>
           <Grid item xs={12} sm={8}>
             <Stage />

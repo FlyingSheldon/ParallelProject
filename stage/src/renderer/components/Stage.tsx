@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Grid, Stack, Button, Container } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { selectOriginalFile, fetchOriginalFileData } from "../store";
-import { useSelector, useDispatch } from "react-redux";
+import { selectCurrentFile, fetchOriginalFileData } from "../store";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 
 const useStyles = makeStyles({
   imgContainer: {
@@ -16,16 +16,16 @@ const useStyles = makeStyles({
 
 const Stage: React.FC = () => {
   const styles = useStyles();
-  const dispatch = useDispatch();
-  const originalFile = useSelector(selectOriginalFile);
+  const dispatch = useAppDispatch();
+  const currentFile = useAppSelector(selectCurrentFile);
 
   const handleOpen = () => {
     dispatch(fetchOriginalFileData());
   };
 
   const handleSave = async () => {
-    if (originalFile) {
-      await window.electronAPI.saveImage(originalFile.path);
+    if (currentFile) {
+      await window.electronAPI.saveImage(currentFile.path);
     }
   };
 
@@ -49,8 +49,8 @@ const Stage: React.FC = () => {
             alignItems: "center",
           }}
         >
-          {originalFile && (
-            <img src={originalFile.data} className={styles.img} />
+          {currentFile && (
+            <img src={currentFile.data} className={styles.img} />
           )}
         </Container>
       </Stack>

@@ -3,11 +3,12 @@ import { Action } from "redux"
 import { ThunkAction } from "redux-thunk"
 
 import fileReducer from "./fileSlice"
+import metricsReducer from "./metricsSlice"
 
 
 const makeStore = () => {
     return configureStore({
-        reducer: { file: fileReducer }
+        reducer: { file: fileReducer, metrics: metricsReducer }
     })
 }
 

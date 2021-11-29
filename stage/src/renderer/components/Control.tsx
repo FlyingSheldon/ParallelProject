@@ -35,7 +35,7 @@ const Control: React.FC = () => {
         <Box sx={{ m: 2 }} />
         <Typography variant="h5">Light</Typography>
         <Box sx={{ m: 1 }} />
-        <AdjustSlider label="Brightness" />
+        <AdjustSlider label="Brightness" defaultValue={0} min={-1} max={1} />
         <Box sx={{ m: 0.5 }} />
         <AdjustSlider label="Highlight" />
         <Box sx={{ m: 0.5 }} />
@@ -43,7 +43,7 @@ const Control: React.FC = () => {
         <Box sx={{ m: 2 }} />
         <Typography variant="h5">Sharpening</Typography>
         <Box sx={{ m: 1 }} />
-        <AdjustSlider label="Amount" />
+        <AdjustSlider label="Sharpness" defaultValue={0} min={0} max={1} />
         <Box sx={{ m: 0.5 }} />
         <AdjustSlider label="Radius" />
         <Box sx={{ m: 1 }} />

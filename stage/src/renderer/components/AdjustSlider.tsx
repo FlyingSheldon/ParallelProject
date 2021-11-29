@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Slider, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 
@@ -16,6 +16,7 @@ export interface AdjustSliderProps {
   max?: number;
   onChangeCommitted?: (v: number) => void;
   label: string;
+  bindValue?: { value: number }
 }
 
 const defaultChangeCommitedHandler: (v: number) => void = () => { return }
@@ -25,7 +26,8 @@ export const AdjustSlider: React.FC<AdjustSliderProps> = ({
   defaultValue = 50,
   min = 0,
   max = 100,
-  onChangeCommitted = defaultChangeCommitedHandler
+  onChangeCommitted = defaultChangeCommitedHandler,
+  bindValue
 }) => {
   const styles = useStyles();
   const [value, setValue] = useState<number>(defaultValue);
@@ -40,6 +42,12 @@ export const AdjustSlider: React.FC<AdjustSliderProps> = ({
   const handleChangeComitted = (event: Event, newValue: number) => {
     onChangeCommitted(newValue)
   }
+
+  useEffect(() => {
+    if (bindValue) {
+      setValue(bindValue.value)
+    }
+  }, [bindValue])
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { AppState } from "./store"
 import { DEFAULT_BRIGHTNESS, DEFAULT_SHARPNESS } from "../app/constants"
+import { fetchOriginalFileData } from "./fileSlice"
 
 export interface MetricsState {
     brightness: number;
@@ -23,6 +24,13 @@ export const metricsSlice = createSlice(
             setSharpness: (state, action: PayloadAction<number>) => {
                 state.sharpness = action.payload
             }
+        },
+        extraReducers: (builder) => {
+            builder
+                .addCase(fetchOriginalFileData.fulfilled, (state) => {
+                    state.brightness = DEFAULT_BRIGHTNESS
+                    state.sharpness = DEFAULT_SHARPNESS
+                })
         }
     }
 )

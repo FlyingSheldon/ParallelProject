@@ -1,17 +1,38 @@
-import React from "react";
-import { selectSharpness, selectBrightness, selectCurrentFile, selectOriginalFile } from "../store";
-import { useAppSelector } from "../app/hooks";
+import React, { useEffect } from "react";
+import {
+    selectSharpness,
+    selectBrightness,
+    selectCurrentFile,
+    selectOriginalFile,
+    resetCurrentFile,
+    fetchProcessedImage
+} from "../store";
+import { useAppSelector, useAppDispatch } from "../app/hooks";
+import { DEFAULT_BRIGHTNESS, DEFAULT_SHARPNESS } from "../app/constants";
 
 const ImageProcessor: React.FC = () => {
     const brightness = useAppSelector(selectBrightness)
     const sharpness = useAppSelector(selectSharpness)
     const originalFile = useAppSelector(selectOriginalFile)
     const currentFile = useAppSelector(selectCurrentFile)
+    const dispatch = useAppDispatch()
 
-    console.log(`Brightness: ${brightness}`)
-    console.log(`Sharpness: ${sharpness}`)
-    console.log(`Original File: ${originalFile?.path}`)
-    console.log(`Current File: ${currentFile?.path}`)
+    useEffect(() => {
+        if (!originalFile) return
+        if (brightness === DEFAULT_BRIGHTNESS
+            && sharpness === DEFAULT_SHARPNESS
+            && originalFile === currentFile) return
+
+
+        if (brightness === DEFAULT_BRIGHTNESS
+            && sharpness === DEFAULT_SHARPNESS
+            && originalFile !== currentFile) {
+            dispatch(resetCurrentFile())
+        } else {
+            dispatch(fetchProcessedImage({ filePath: originalFile.path, metrics: { brightness, sharpness } }))
+        }
+    }, [brightness, sharpness, originalFile, currentFile, dispatch])
+
     return <></>
 }
 

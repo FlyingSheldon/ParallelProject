@@ -1,8 +1,22 @@
 import { dialog, BrowserWindow, IpcMainInvokeEvent } from "electron";
 import { promises as fs } from 'fs';
 import path from 'path';
+import { ImageMetrics } from "../types";
 
 type OpenImageReturn = { path: string, data: string } | undefined
+
+const getDataType = (p: string): string => {
+    let dataType: string;
+    const ext = path.extname(p).toLowerCase();
+    if (ext === ".jpg" || ext === ".jpeg") {
+        dataType = "jpg";
+    } else if (ext === ".gif") {
+        dataType = "gif";
+    } else {
+        dataType = "png";
+    }
+    return dataType
+}
 
 export const handleOpenImage = async (): Promise<OpenImageReturn> => {
     const res = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
@@ -18,15 +32,7 @@ export const handleOpenImage = async (): Promise<OpenImageReturn> => {
 
     const data = await fs.readFile(res.filePaths[0], { encoding: 'base64' });
 
-    let dataType: string;
-    const ext = path.extname(res.filePaths[0]).toLowerCase();
-    if (ext === ".jpg" || ext === ".jpeg") {
-        dataType = "jpg";
-    } else if (ext === ".gif") {
-        dataType = "gif";
-    } else {
-        dataType = "png";
-    }
+    const dataType: string = getDataType(res.filePaths[0])
 
     return {
         path: res.filePaths[0],
@@ -44,4 +50,14 @@ export const handleSaveImage = async (event: IpcMainInvokeEvent, srcPath: string
     const dstPath = res.filePath;
 
     await fs.copyFile(srcPath, dstPath)
+}
+
+export const handleProcessImage = async (event: IpcMainInvokeEvent, srcPath: string, metrics: ImageMetrics): Promise<OpenImageReturn> => {
+    const data = await fs.readFile(srcPath, { encoding: 'base64' });
+    const dataType: string = getDataType(srcPath)
+    console.log(metrics)
+    return {
+        path: srcPath,
+        data: `data:image/${dataType};base64,${data}`,
+    }
 }

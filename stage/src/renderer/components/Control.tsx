@@ -5,11 +5,8 @@ import {
   Theme,
   Stack,
   Box,
-  Divider,
-  stepButtonClasses,
 } from "@mui/material";
 import { makeStyles, createStyles } from "@mui/styles";
-import { AdjustSlider } from "./AdjustSlider";
 import { ImageControl } from "./ImageControl";
 
 const useStyles = makeStyles((theme: Theme) =>

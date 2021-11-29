@@ -22,7 +22,7 @@ export const handleOpenImage = async (): Promise<OpenImageReturn> => {
     const res = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
         properties: ['openFile'],
         filters: [
-            { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif'] }
+            { name: 'Images', extensions: ['jpg', 'jpeg'] }
         ]
     });
 

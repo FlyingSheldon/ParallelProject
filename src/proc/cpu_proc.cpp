@@ -2,12 +2,24 @@
 #include <limits>
 #include <math.h>
 
-void LinearImageProc::Brighten(Image &img, double value) {
-  linear::brighten(img, value);
+void LinearImageProc::Brighten(double value) { linear::brighten(img, value); }
+
+void LinearImageProc::Sharpen(double value) { linear::sharpen(img, value); }
+
+ImageProc::ImageIOResult LinearImageProc::LoadImage(std::string filename) {
+  std::variant<Image, Image::ImageError> res = Image::OpenImage(filename);
+
+  if (const Image::ImageError *error = std::get_if<Image::ImageError>(&res)) {
+    return *error;
+  }
+
+  img = std::move(std::get<Image>(res));
+
+  return {};
 }
 
-void LinearImageProc::Sharpen(Image &img, double value) {
-  linear::sharpen(img, value);
+ImageProc::ImageIOResult LinearImageProc::SaveImage(std::string filename) {
+  return img.Save(filename);
 }
 
 namespace linear {

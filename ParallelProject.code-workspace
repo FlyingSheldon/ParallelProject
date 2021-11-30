@@ -146,6 +146,18 @@
 				"osx": {
 					"MIMode": "lldb",
 				}
+			},
+			{
+				"name": "test",
+				"type": "cppdbg",
+				"request": "launch",
+				"mode": "auto",
+				"program": "${workspaceRoot}/build/src/tests/pp_test",
+				"stopAtEntry": false,
+				"cwd": "${workspaceRoot}",
+				"osx": {
+					"MIMode": "lldb",
+				}
 			}
 		]
 	}

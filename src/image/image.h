@@ -38,6 +38,7 @@ public:
   // or some other error is encountered.
   // explicit Image(const std::string &fileName);
   explicit Image(size_t width, size_t height, size_t pixelSize, int colorSpace);
+  Image() : Image(0, 0, 0, 0) {}
 
   // We can construct from an existing image object. This allows us
   // to work on a copy (e.g. shrink then save) without affecting the
@@ -47,7 +48,7 @@ public:
 
   // But assigment and move operations are currently disallowed
   Image &operator=(const Image &) = delete;
-  Image &operator=(Image &&) = delete;
+  Image &operator=(Image &&);
 
   ~Image();
 
@@ -77,7 +78,7 @@ public:
   uint8_t *GetPixelData(size_t x, size_t y);
   const uint8_t *GetPixelData(size_t x, size_t y) const;
 
-  double *GetValueData(size_t x, size_t y) ;
+  double *GetValueData(size_t x, size_t y);
   const double GetValue(size_t x, size_t y) const;
 
   double *GetHSVData(size_t x, size_t y);

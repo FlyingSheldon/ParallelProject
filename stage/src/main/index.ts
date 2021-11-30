@@ -19,7 +19,7 @@ const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 900,
-    width: 1200,
+    width: 1500,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
     }
@@ -29,7 +29,7 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   global.__TEMP_DIR_PATH__ =
     fs.mkdtempSync(path.join(os.tmpdir(), 'pp_stage_processed'))

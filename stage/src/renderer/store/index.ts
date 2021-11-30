@@ -4,6 +4,8 @@ export {
     default,
     setSharpness,
     setBrightness,
+    selectCurrentMetrics,
+    selectMetrics,
     selectBrightness,
     selectSharpness
 } from "./metricsSlice"

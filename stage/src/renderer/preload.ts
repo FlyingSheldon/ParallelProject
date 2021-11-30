@@ -9,6 +9,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     await ipcRenderer.invoke("save-image", path)
   },
   processImage: async (path: string, metrics: ImageMetrics) => {
-    await ipcRenderer.invoke("process-image", path, metrics)
+    return await ipcRenderer.invoke("process-image", path, metrics)
   }
 });

@@ -1,7 +1,7 @@
 import React from "react";
-import { Box, Grid, Stack, Button, Container } from "@mui/material";
+import { Box, Grid, Stack, Button, Container, CircularProgress, Backdrop } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { selectCurrentFile, fetchOriginalFileData } from "../store";
+import { selectCurrentFile, fetchOriginalFileData, selectCurrentFilePending } from "../store";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 
 const useStyles = makeStyles({
@@ -18,6 +18,7 @@ const Stage: React.FC = () => {
   const styles = useStyles();
   const dispatch = useAppDispatch();
   const currentFile = useAppSelector(selectCurrentFile);
+  const isPending = useAppSelector(selectCurrentFilePending)
 
   const handleOpen = () => {
     dispatch(fetchOriginalFileData());
@@ -52,6 +53,12 @@ const Stage: React.FC = () => {
           {currentFile && (
             <img src={currentFile.data} className={styles.img} />
           )}
+          {isPending && <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={isPending}
+          >
+            <CircularProgress color="inherit" />
+          </Backdrop>}
         </Container>
       </Stack>
     </>

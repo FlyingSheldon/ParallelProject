@@ -1,7 +1,9 @@
+import { execSync } from "child_process";
 import { dialog, BrowserWindow, IpcMainInvokeEvent } from "electron";
 import { promises as fs } from 'fs';
 import path from 'path';
 import { ImageMetrics } from "../types";
+import { buildPPCommand } from "./proc";
 
 type OpenImageReturn = { path: string, data: string } | undefined
 
@@ -53,11 +55,17 @@ export const handleSaveImage = async (event: IpcMainInvokeEvent, srcPath: string
 }
 
 export const handleProcessImage = async (event: IpcMainInvokeEvent, srcPath: string, metrics: ImageMetrics): Promise<OpenImageReturn> => {
-    const data = await fs.readFile(srcPath, { encoding: 'base64' });
+    const fileName = path.basename(srcPath);
+    const newPath = path.join(global.__TEMP_DIR_PATH__, fileName);
+    const cmd = buildPPCommand(srcPath, newPath, metrics)
+
+    execSync(cmd)
+
+    const data = await fs.readFile(newPath, { encoding: 'base64' });
     const dataType: string = getDataType(srcPath)
-    console.log(metrics)
+
     return {
-        path: srcPath,
+        path: newPath,
         data: `data:image/${dataType};base64,${data}`,
     }
 }

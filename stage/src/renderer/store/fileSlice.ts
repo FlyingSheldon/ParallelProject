@@ -12,9 +12,12 @@ export interface FileState {
     originalFileData?: string,
     currentFilePath?: string,
     currentFileData?: string,
+    currentFilePending: boolean,
 }
 
-const initialState: FileState = {}
+const initialState: FileState = {
+    currentFilePending: false
+}
 
 export const fetchOriginalFileData = createAsyncThunk(
     "file/fetchFileData",
@@ -62,6 +65,10 @@ export const fileSlice = createSlice({
                     state.currentFileData = action.payload.data
                     state.currentFilePath = action.payload.path
                 }
+                state.currentFilePending = false
+            })
+            .addCase(fetchProcessedImage.pending, (state) => {
+                state.currentFilePending = true
             })
     }
 })
@@ -84,6 +91,10 @@ export const selectCurrentFile = (state: AppState): ImageFile | undefined => {
     } else {
         return undefined
     }
+}
+
+export const selectCurrentFilePending = (state: AppState): boolean => {
+    return state.file.currentFilePending
 }
 
 export default fileSlice.reducer

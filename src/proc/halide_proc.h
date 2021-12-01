@@ -11,6 +11,7 @@ public:
   virtual std::string Name() const override { return "halide"; }
   virtual ImageIOResult LoadImage(std::string filename) override;
   virtual ImageIOResult SaveImage(std::string filename) override;
+  virtual Image *GetImage() override;
 
 private:
   Halide::Buffer<uint8_t> hImg;

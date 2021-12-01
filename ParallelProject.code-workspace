@@ -116,7 +116,9 @@
 			"memory_resource": "cpp",
 			"stop_token": "cpp",
 			"cinttypes": "cpp",
-			"variant": "cpp"
+			"variant": "cpp",
+			"filesystem": "cpp",
+			"forward_list": "cpp"
 		},
 	},
 	"extensions": {

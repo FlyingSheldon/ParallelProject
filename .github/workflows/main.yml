@@ -52,3 +52,15 @@ jobs:
         run: |
           cmake -S . -DCMAKE_BUILD_TYPE:STRING=Release -DHalide_DIR=${{ env.HALIDE_DIR }}/lib/cmake/Halide -DHalideHelpers_DIR=${{ env.HALIDE_DIR }}/lib/cmake/HalideHelpers  -B build
           cmake --build build
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check If Halide Works
+        run: |
+          ${GITHUB_WORKSPACE}/build/src/pp ${GITHUB_WORKSPACE}/test.jpg -o gg.jpg --impl halide
+      - name: Run Tests
+        run: |
+          cd ${GITHUB_WORKSPACE}/build
+          ctest
+  

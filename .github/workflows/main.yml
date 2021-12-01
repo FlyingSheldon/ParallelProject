@@ -50,5 +50,5 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Build
         run: |
-          cmake -S . -DCMAKE_BUILD_TYPE:STRING=Release -DHalide_DIR=${{ env.HALIDE_DIR }}/lib/cmake/Halide  -B build
+          cmake -S . -DCMAKE_BUILD_TYPE:STRING=Release -DHalide_DIR=${{ env.HALIDE_DIR }}/lib/cmake/Halide -DHalideHelpers_DIR=${{ env.HALIDE_DIR }}/lib/cmake/HalideHelpers  -B build
           cmake --build build

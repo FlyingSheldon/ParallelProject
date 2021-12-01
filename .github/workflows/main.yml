@@ -44,6 +44,7 @@ jobs:
         run: |
           wget ${{ env.url }}
           tar -xf Halide*.tar.gz
+          rm Halide*.tar.gz
           mv Halide* halide
                    
       # Runs a set of commands using the runners shell

@@ -34,6 +34,16 @@ jobs:
         uses: KyleMayes/install-llvm-action@v1.5.0
         with:
           cached: true
+  
+      - name: Install Halide
+        env:
+          url: https://github.com/halide/Halide/releases/download/v13.0.1/Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d.tar.gz
+          filename: Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d.tar.gz
+        run: |
+          wget ${{ env.url }}
+          tar -xf ${{ env.filename }}
+          pwd
+      
           
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script

@@ -1,0 +1,65 @@
+# This is a basic workflow to help you get started with Actions
+
+name: PP Build and Test
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ ci-test ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      HALIDE_DIR: ${GITHUB_WORKSPACE}/halide
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      - name: Get latest CMake and ninja
+        # Using 'latest' branch, the most recent CMake and ninja are installed.
+        uses: lukka/get-cmake@latest
+      
+      - name: Install LLVM and Clang
+        # You may pin to the exact commit or the version.
+        # uses: KyleMayes/install-llvm-action@05c61da4ecfc850b6112f0b289000c2c0fecbcc8
+        uses: KyleMayes/install-llvm-action@v1.5.0
+        with:
+          cached: true
+  
+      - name: Install Halide
+        env:
+          url: https://github.com/halide/Halide/releases/download/v13.0.1/Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d.tar.gz
+          filename: Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d
+        run: |
+          wget ${{ env.url }}
+          tar -xf Halide*.tar.gz
+          rm Halide*.tar.gz
+          mv Halide* halide
+                   
+      # Runs a set of commands using the runners shell
+      - name: Build
+        run: |
+          cmake -S . -DCMAKE_BUILD_TYPE:STRING=Release -DHalide_DIR=${{ env.HALIDE_DIR }}/lib/cmake/Halide -DHalideHelpers_DIR=${{ env.HALIDE_DIR }}/lib/cmake/HalideHelpers  -B build
+          cmake --build build
+      
+      - name: Check If Halide Works
+        run: |
+          ${GITHUB_WORKSPACE}/build/src/pp ${GITHUB_WORKSPACE}/test.jpg -o gg.jpg --impl halide
+      
+      - name: Run Tests
+        run: |
+          cd ${GITHUB_WORKSPACE}/build
+          ctest
+
+  

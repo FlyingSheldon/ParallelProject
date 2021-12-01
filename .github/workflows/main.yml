@@ -17,25 +17,7 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    name: ${ { matrix.config.name } }
-    runs-on: ${ { matrix.config.os } }
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - os: ubuntu-latest
-          name: "Ubuntu Latest GCC" 
-          artifact: "Linux.tar.xz"
-          build_type: "Release" 
-          cc: "gcc"
-          cxx: "g++"
-          
-        - os: macos-latest
-          name: "macOS Latest Clang" 
-          artifact: "macOS.tar.xz"
-          build_type: "Release"
-          cc: "clang"
-          cxx: "clang++"
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

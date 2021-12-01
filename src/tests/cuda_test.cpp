@@ -1,8 +1,10 @@
 #include "image/image.h"
-#include "proc/cuda_proc.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <iostream>
+
+#ifdef PP_USE_CUDA
+#include "proc/cuda_proc.h"
 
 TEST(CudaTest, BrightenTest) {
   std::cout << "Please check test path: " << std::filesystem::current_path()
@@ -37,3 +39,11 @@ TEST(CudaTest, BrightenTest) {
     }
   }
 }
+
+#else
+
+TEST(CudaTest, PlaceHolderTest) {
+  std::cout << "Cuda is not supported, not tested!" << std::endl;
+}
+
+#endif // #ifdef PP_USE_CUDA

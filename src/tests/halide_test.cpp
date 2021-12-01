@@ -1,8 +1,10 @@
 #include "image/image.h"
-#include "proc/halide_proc.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <iostream>
+
+#ifdef PP_USE_HALIDE
+#include "proc/halide_proc.h"
 
 TEST(HalideTest, BrightenTest) {
   std::cout << "Please check test path: " << std::filesystem::current_path()
@@ -40,3 +42,11 @@ TEST(HalideTest, BrightenTest) {
     }
   }
 }
+
+#else
+
+TEST(HalideTest, PlaceHolderTest) {
+  std::cout << "Halide is not supported, not tested!" << std::endl;
+}
+
+#endif // #ifdef PP_USE_HALIDE

@@ -18,6 +18,8 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     runs-on: ubuntu-latest
+    env:
+      HALIDE_DIR: ${{ GITHUB_WORKSPACE }}/halide
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -38,15 +40,18 @@ jobs:
       - name: Install Halide
         env:
           url: https://github.com/halide/Halide/releases/download/v13.0.1/Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d.tar.gz
-          filename: Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d.tar.gz
+          filename: Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d
         run: |
           wget ${{ env.url }}
-          tar -xf ${{ env.filename }}
-          pwd
-      
-          
+          tar -xf ${{ env.filename }}.tar.gz
+          mv ${{ env.filename }} halide
+                   
       # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Build
         run: |
           clang --version
           cmake --version
+          ls ${{ env.HALIDE_DIR }}/lib
+          cmake -S . -DCMAKE_BUILD_TYPE:STRING=Release -B build
+          cmake --build build
+          ctest --version

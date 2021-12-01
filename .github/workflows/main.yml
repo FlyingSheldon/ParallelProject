@@ -43,8 +43,8 @@ jobs:
           filename: Halide-13.0.1-x86-64-linux-fb39d7e3149c0ee1e848bb9957be2ea18765c35d
         run: |
           wget ${{ env.url }}
-          tar -xf ${{ env.filename }}.tar.gz
-          mv ${{ env.filename }} halide
+          tar -xf Halide*.tar.gz
+          mv Halide* halide
                    
       # Runs a set of commands using the runners shell
       - name: Build

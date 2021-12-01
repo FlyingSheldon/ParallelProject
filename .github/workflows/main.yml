@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      HALIDE_DIR: ${{ env.GITHUB_WORKSPACE }}/halide
+      HALIDE_DIR: ${GITHUB_WORKSPACE}/halide
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

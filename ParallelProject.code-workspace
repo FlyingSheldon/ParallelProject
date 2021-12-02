@@ -118,7 +118,13 @@
 			"cinttypes": "cpp",
 			"variant": "cpp",
 			"filesystem": "cpp",
-			"forward_list": "cpp"
+			"forward_list": "cpp",
+			"any": "cpp",
+			"strstream": "cpp",
+			"hash_map": "cpp",
+			"hash_set": "cpp",
+			"cfenv": "cpp",
+			"typeindex": "cpp"
 		},
 	},
 	"extensions": {

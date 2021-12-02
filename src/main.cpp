@@ -18,15 +18,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  auto imageResult = Image::OpenImage(conf.input);
-  if (const Image::ImageError *error =
-          std::get_if<Image::ImageError>(&imageResult)) {
-    std::cerr << *error << std::endl;
-    return 1;
-  }
-
-  Image img = std::move(std::get<Image>(imageResult));
-
   std::unique_ptr<ImageProc> proc;
 
   switch (conf.impl) {
@@ -46,19 +37,24 @@ int main(int argc, char **argv) {
               << std::endl;
   }
 
+  auto imageResult = proc->LoadImage(conf.input);
+  if (const Image::ImageError *error =
+          std::get_if<Image::ImageError>(&imageResult)) {
+    std::cerr << *error << std::endl;
+    return 1;
+  }
+
   auto brightStart = Timer::Now();
   if (conf.brightness != 1.0) {
-    proc->Brighten(img, conf.brightness);
+    proc->Brighten(conf.brightness);
   }
   auto brightEnd = Timer::Now();
 
   auto sharpStart = Timer::Now();
   if (conf.sharpness != 0.0) {
-    proc->Sharpen(img, conf.sharpness);
+    proc->Sharpen(conf.sharpness);
   }
   auto sharpEnd = Timer::Now();
-
-  img.Save(conf.output);
 
   if (conf.showTime) {
     std::cout << "Brigten: "
@@ -67,5 +63,12 @@ int main(int argc, char **argv) {
     std::cout << "Sharpen: "
               << Timer::DurationInMillisecond(sharpStart, sharpEnd) << " ms"
               << std::endl;
+  }
+
+  imageResult = proc->SaveImage(conf.output);
+  if (const Image::ImageError *error =
+          std::get_if<Image::ImageError>(&imageResult)) {
+    std::cerr << *error << std::endl;
+    return 1;
   }
 }

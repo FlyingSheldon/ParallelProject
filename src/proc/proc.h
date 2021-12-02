@@ -1,23 +1,38 @@
 #pragma once
 #include "image/image.h"
+#include <variant>
 
 const int dx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 const int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
 class ImageProc {
 public:
-  virtual void Brighten(Image &image, double value) {}
-  virtual void Sharpen(Image &image, double value) {}
+  using ImageIOResult = std::variant<std::monostate, Image::ImageError>;
+  virtual void Brighten(double value) {}
+  virtual void Sharpen(double value) {}
   virtual bool IsSupported() const { return false; }
   virtual std::string Name() const { return ""; }
+  virtual ImageIOResult LoadImage(std::string filename) {
+    return Image::ImageError("Not implemented");
+  }
+  virtual ImageIOResult SaveImage(std::string filename) {
+    return Image::ImageError("Not implemented");
+  }
+  virtual Image *GetImage() { return nullptr; }
 };
 
 class LinearImageProc : public ImageProc {
 public:
-  virtual void Brighten(Image &image, double value);
-  virtual void Sharpen(Image &image, double value);
-  virtual bool IsSupported() const { return true; }
-  virtual std::string Name() const { return "linear"; }
+  virtual void Brighten(double value) override;
+  virtual void Sharpen(double value) override;
+  virtual bool IsSupported() const override { return true; }
+  virtual std::string Name() const override { return "linear"; }
+  virtual ImageIOResult LoadImage(std::string filename) override;
+  virtual ImageIOResult SaveImage(std::string filename) override;
+  virtual Image *GetImage() override { return &img; }
+
+private:
+  Image img;
 };
 
 namespace linear {
@@ -46,7 +61,7 @@ bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth);
  * @param lpf      threshold, [0,8]
  */
 void lowPassFilter(Image &image, std::vector<bool> &g, int lpf);
-bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y,
+bool lowPassFilterPixel(Image &image, std::vector<bool> &g, size_t x, size_t y,
                         int lpf);
 
 double additiveMaginitude(Image &image);
@@ -60,4 +75,4 @@ double computelocalMean(Image &image, size_t x, size_t y);
  * @param s            scaling factor controls degree of sharpness, [0, 1]
  * @param delta        additive magnitude
  */
-void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta);
+void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta);

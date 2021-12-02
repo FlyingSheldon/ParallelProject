@@ -2,12 +2,24 @@
 #include <limits>
 #include <math.h>
 
-void LinearImageProc::Brighten(Image &img, double value) {
-  linear::brighten(img, value);
+void LinearImageProc::Brighten(double value) { linear::brighten(img, value); }
+
+void LinearImageProc::Sharpen(double value) { linear::sharpen(img, value); }
+
+ImageProc::ImageIOResult LinearImageProc::LoadImage(std::string filename) {
+  std::variant<Image, Image::ImageError> res = Image::OpenImage(filename);
+
+  if (const Image::ImageError *error = std::get_if<Image::ImageError>(&res)) {
+    return *error;
+  }
+
+  img = std::move(std::get<Image>(res));
+
+  return {};
 }
 
-void LinearImageProc::Sharpen(Image &img, double value) {
-  linear::sharpen(img, value);
+ImageProc::ImageIOResult LinearImageProc::SaveImage(std::string filename) {
+  return img.Save(filename);
 }
 
 namespace linear {
@@ -91,7 +103,7 @@ std::vector<bool> edgeDetect(Image &image, double eth) {
   return g;
 }
 
-bool lowPassFilterPixel(Image &image, std::vector<bool> g, size_t x, size_t y,
+bool lowPassFilterPixel(Image &image, std::vector<bool> &g, size_t x, size_t y,
                         int lpf) {
   int cnt = 0;
   for (int i = 0; i < 8; i++) {
@@ -160,7 +172,7 @@ double computelocalMean(Image &image, size_t x, size_t y) {
   return localMean;
 }
 
-void edgeSharpen(Image &image, std::vector<bool> g, double s, double delta) {
+void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta) {
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
       int index = y * image.GetWidth() + x;

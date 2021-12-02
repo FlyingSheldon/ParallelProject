@@ -172,6 +172,22 @@ Image::Image(Image &&rhs) {
   rhs.m_colourSpace = 0;
 }
 
+Image &Image::operator=(Image &&rhs) {
+  m_bitmapData = std::move(rhs.m_bitmapData);
+  m_hsvData = std::move(rhs.m_hsvData);
+  m_width = rhs.m_width;
+  m_height = rhs.m_height;
+  m_pixelSize = rhs.m_pixelSize;
+  m_colourSpace = rhs.m_colourSpace;
+
+  rhs.m_width = 0;
+  rhs.m_height = 0;
+  rhs.m_pixelSize = 0;
+  rhs.m_colourSpace = 0;
+
+  return *this;
+}
+
 Image::~Image() {}
 
 std::variant<std::monostate, Image::ImageError>

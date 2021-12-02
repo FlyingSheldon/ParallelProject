@@ -1,26 +1,33 @@
 #include "image/image.h"
-#include "proc/cuda_proc.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <iostream>
+
+#ifdef PP_USE_CUDA
+#include "proc/cuda_proc.h"
 
 TEST(CudaTest, BrightenTest) {
   std::cout << "Please check test path: " << std::filesystem::current_path()
             << std::endl;
 
-  auto imageResult = Image::OpenImage("test.jpg");
-  const Image::ImageError *error = std::get_if<Image::ImageError>(&imageResult);
-
-  ASSERT_FALSE(error) << "Failed to open the file";
-
-  Image img = std::move(std::get<Image>(imageResult));
-  Image img2(img);
-
   CudaImageProc cudaProc;
   LinearImageProc linearProc;
 
-  cudaProc.Brighten(img, 1.5);
-  linearProc.Brighten(img2, 1.5);
+  auto res = cudaProc.LoadImage("test.jpg");
+  auto res2 = linearProc.LoadImage("test.jpg");
+
+  Image::ImageError *error = std::get_if<Image::ImageError>(&res);
+
+  ASSERT_FALSE(error) << "Failed to open the file: " << *error;
+
+  cudaProc.Brighten(1.5);
+  linearProc.Brighten(1.5);
+
+  Image &img = *cudaProc.GetImage();
+  Image &img2 = *linearProc.GetImage();
+
+  ASSERT_EQ(img.GetWidth(), img2.GetWidth());
+  ASSERT_EQ(img.GetHeight(), img2.GetHeight());
 
   for (int y = 0; y < img.GetHeight(); y++) {
     for (int x = 0; x < img.GetWidth(); x++) {
@@ -37,19 +44,21 @@ TEST(CudaTest, SharpenTest) {
   std::cout << "Please check test path: " << std::filesystem::current_path()
             << std::endl;
 
-  auto imageResult = Image::OpenImage("test.jpg");
-  const Image::ImageError *error = std::get_if<Image::ImageError>(&imageResult);
-
-  ASSERT_FALSE(error) << "Failed to open the file";
-
-  Image img = std::move(std::get<Image>(imageResult));
-  Image img2(img);
-
   CudaImageProc cudaProc;
   LinearImageProc linearProc;
 
-  cudaProc.Sharpen(img, 0.5);
-  linearProc.Sharpen(img2, 0.5);
+  auto res = cudaProc.LoadImage("test.jpg");
+  auto res2 = linearProc.LoadImage("test.jpg");
+
+  Image::ImageError *error = std::get_if<Image::ImageError>(&res);
+
+  ASSERT_FALSE(error) << "Failed to open the file: " << *error;
+
+  cudaProc.Sharpen(0.5);
+  linearProc.Sharpen(0.5);
+
+  Image &img = *cudaProc.GetImage();
+  Image &img2 = *linearProc.GetImage();
 
   for (int y = 0; y < img.GetHeight(); y++) {
     for (int x = 0; x < img.GetWidth(); x++) {
@@ -61,3 +70,10 @@ TEST(CudaTest, SharpenTest) {
     }
   }
 }
+#else
+
+TEST(CudaTest, PlaceHolderTest) {
+  std::cout << "Cuda is not supported, not tested!" << std::endl;
+}
+
+#endif // #ifdef PP_USE_CUDA

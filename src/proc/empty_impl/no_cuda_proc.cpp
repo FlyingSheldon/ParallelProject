@@ -4,8 +4,16 @@
 
 CudaImageProc::CudaImageProc() {}
 
-void CudaImageProc::Brighten(Image &img, double value) {}
+void CudaImageProc::Brighten(double value) {}
 
-void CudaImageProc::Sharpen(Image &img, double value) {}
+void CudaImageProc::Sharpen(double value) {}
 
 bool CudaImageProc::IsSupported() const { return false; }
+
+ImageProc::ImageIOResult CudaImageProc::LoadImage(std::string filename) {
+  return Image::ImageError("not implemented");
+}
+
+ImageProc::ImageIOResult CudaImageProc::SaveImage(std::string filename) {
+  return Image::ImageError("not implemented");
+}

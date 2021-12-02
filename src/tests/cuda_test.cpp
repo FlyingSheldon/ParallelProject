@@ -32,7 +32,7 @@ TEST(CudaTest, BrightenTest) {
   for (int y = 0; y < img.GetHeight(); y++) {
     for (int x = 0; x < img.GetWidth(); x++) {
       auto p = img.GetPixelData(x, y);
-      auto p2 = img.GetPixelData(x, y);
+      auto p2 = img2.GetPixelData(x, y);
       ASSERT_EQ(p[0], p2[0]) << "Pixel " << x << " " << y << " red not equal";
       ASSERT_EQ(p[1], p2[1]) << "Pixel " << x << " " << y << " green not equal";
       ASSERT_EQ(p[2], p2[2]) << "Pixel " << x << " " << y << " blue not equal";
@@ -63,10 +63,16 @@ TEST(CudaTest, SharpenTest) {
   for (int y = 0; y < img.GetHeight(); y++) {
     for (int x = 0; x < img.GetWidth(); x++) {
       auto p = img.GetPixelData(x, y);
-      auto p2 = img.GetPixelData(x, y);
-      ASSERT_EQ(p[0], p2[0]) << "Pixel " << x << " " << y << " red not equal";
-      ASSERT_EQ(p[1], p2[1]) << "Pixel " << x << " " << y << " green not equal";
-      ASSERT_EQ(p[2], p2[2]) << "Pixel " << x << " " << y << " blue not equal";
+      auto p2 = img2.GetPixelData(x, y);
+      ASSERT_TRUE(std::abs((int)p[0] - (int)p2[0]) <= 2)
+          << "Pixel " << x << " " << y << " red not equal:   " << (int)p[0]
+          << " " << (int)p2[0];
+      ASSERT_TRUE(std::abs((int)p[1] - (int)p2[1] <= 2))
+          << "Pixel " << x << " " << y << " green not equal: " << (int)p[1]
+          << " " << (int)p2[1];
+      ASSERT_TRUE(std::abs((int)p[2] - (int)p2[2] <= 2))
+          << "Pixel " << x << " " << y << " blue not equal:  " << (int)p[2]
+          << " " << (int)p2[2];
     }
   }
 }

@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
+import { ImageMetrics } from "../types"
 
 contextBridge.exposeInMainWorld("electronAPI", {
   openImage: async () => {
@@ -6,5 +7,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   saveImage: async (path: string) => {
     await ipcRenderer.invoke("save-image", path)
+  },
+  processImage: async (path: string, metrics: ImageMetrics) => {
+    return await ipcRenderer.invoke("process-image", path, metrics)
   }
 });

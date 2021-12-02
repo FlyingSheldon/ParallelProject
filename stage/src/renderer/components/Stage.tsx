@@ -1,31 +1,32 @@
 import React from "react";
-import { Box, Grid, Stack, Button, Container } from "@mui/material";
+import { Box, Grid, Stack, Button, Container, CircularProgress, Backdrop } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { selectOriginalFile, fetchOriginalFileData } from "../store";
-import { useSelector, useDispatch } from "react-redux";
+import { selectCurrentFile, fetchOriginalFileData, selectCurrentFilePending } from "../store";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 
 const useStyles = makeStyles({
   imgContainer: {
     height: "100%",
   },
   img: {
-    minWidth: "60%",
+    minWidth: "50%",
     maxWidth: "80%",
   },
 });
 
 const Stage: React.FC = () => {
   const styles = useStyles();
-  const dispatch = useDispatch();
-  const originalFile = useSelector(selectOriginalFile);
+  const dispatch = useAppDispatch();
+  const currentFile = useAppSelector(selectCurrentFile);
+  const isPending = useAppSelector(selectCurrentFilePending)
 
   const handleOpen = () => {
     dispatch(fetchOriginalFileData());
   };
 
   const handleSave = async () => {
-    if (originalFile) {
-      await window.electronAPI.saveImage(originalFile.path);
+    if (currentFile) {
+      await window.electronAPI.saveImage(currentFile.path);
     }
   };
 
@@ -49,9 +50,15 @@ const Stage: React.FC = () => {
             alignItems: "center",
           }}
         >
-          {originalFile && (
-            <img src={originalFile.data} className={styles.img} />
+          {currentFile && (
+            <img src={currentFile.data} className={styles.img} />
           )}
+          {isPending && <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={isPending}
+          >
+            <CircularProgress color="inherit" />
+          </Backdrop>}
         </Container>
       </Stack>
     </>

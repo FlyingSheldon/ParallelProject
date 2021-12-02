@@ -5,6 +5,8 @@
   "description": "App to demonstrate Parallel Project",
   "main": ".webpack/main",
   "scripts": {
+    "predev": "bash build_bin.sh",
+    "dev": "electron-forge start",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",

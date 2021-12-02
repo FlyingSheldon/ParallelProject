@@ -5,11 +5,9 @@ import {
   Theme,
   Stack,
   Box,
-  Divider,
-  stepButtonClasses,
 } from "@mui/material";
 import { makeStyles, createStyles } from "@mui/styles";
-import { AdjustSlider } from "./AdjustSlider";
+import { ImageControl } from "./ImageControl";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,23 +30,7 @@ const Control: React.FC = () => {
     <Container className={styles.root}>
       <Stack>
         <Typography variant="h4">Control</Typography>
-        <Box sx={{ m: 2 }} />
-        <Typography variant="h5">Light</Typography>
-        <Box sx={{ m: 1 }} />
-        <AdjustSlider label="Brightness" />
-        <Box sx={{ m: 0.5 }} />
-        <AdjustSlider label="Highlight" />
-        <Box sx={{ m: 0.5 }} />
-        <AdjustSlider label="Shadow" />
-        <Box sx={{ m: 2 }} />
-        <Typography variant="h5">Sharpening</Typography>
-        <Box sx={{ m: 1 }} />
-        <AdjustSlider label="Amount" />
-        <Box sx={{ m: 0.5 }} />
-        <AdjustSlider label="Radius" />
-        <Box sx={{ m: 1 }} />
-        <Divider />
-        <Box sx={{ m: 1 }} />
+        <ImageControl />
         <Typography variant="h4">Stat</Typography>
         <Box sx={{ m: 2 }} />
         <div className={styles.line}>

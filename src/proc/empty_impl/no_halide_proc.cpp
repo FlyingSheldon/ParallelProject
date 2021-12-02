@@ -17,3 +17,5 @@ ImageProc::ImageIOResult HalideImageProc::LoadImage(std::string filename) {
 ImageProc::ImageIOResult HalideImageProc::SaveImage(std::string filename) {
   return Image::ImageError("not implemented");
 }
+
+Image *HalideImageProc::GetImage() { return nullptr; }

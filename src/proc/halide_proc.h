@@ -1,6 +1,9 @@
 #pragma once
 #include "proc/proc.h"
+
+#ifdef PP_USE_HALIDE
 #include <Halide.h>
+#endif
 
 class HalideImageProc : public ImageProc {
 public:
@@ -13,7 +16,9 @@ public:
   virtual ImageIOResult SaveImage(std::string filename) override;
   virtual Image *GetImage() override;
 
+#ifdef PP_USE_HALIDE
 private:
   Halide::Buffer<uint8_t> hImg;
   Image img;
+#endif
 };

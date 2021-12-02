@@ -116,7 +116,9 @@
 			"memory_resource": "cpp",
 			"stop_token": "cpp",
 			"cinttypes": "cpp",
-			"variant": "cpp"
+			"variant": "cpp",
+			"filesystem": "cpp",
+			"forward_list": "cpp"
 		},
 	},
 	"extensions": {
@@ -142,6 +144,18 @@
 					"-o",
 					"output.jpg"
 				],
+				"cwd": "${workspaceRoot}",
+				"osx": {
+					"MIMode": "lldb",
+				}
+			},
+			{
+				"name": "test",
+				"type": "cppdbg",
+				"request": "launch",
+				"mode": "auto",
+				"program": "${workspaceRoot}/build/src/tests/pp_test",
+				"stopAtEntry": false,
 				"cwd": "${workspaceRoot}",
 				"osx": {
 					"MIMode": "lldb",

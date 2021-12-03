@@ -13,11 +13,11 @@ __device__ double3 rgbToHsv(uchar3 px) {
   if (cmax == cmin) {
     h = 0.0;
   } else if (cmax == r) {
-    h = fmod((60.0 * ((g - b) / diff) + 360.0), 360.0);
+    h = fmod(60.0 * ((g - b) / diff) + 360.0, 360.0);
   } else if (cmax == g) {
-    h = fmod((60.0 * ((r - g) / diff) + 360.0), 360.0);
+    h = 60.0 * ((b - r) / diff) + 120.0;
   } else if (cmax == b) {
-    h = fmod((60.0 * ((r - g) / diff) + 360.0), 360.0);
+    h = 60.0 * ((r - g) / diff) + 240.0;
   }
 
   if (cmax == 0.0) {
@@ -64,7 +64,7 @@ __device__ uchar3 hsvToRgb(double3 px) {
     break;
   }
 
-  return make_uchar3(static_cast<unsigned char>(r),
-                     static_cast<unsigned char>(g),
-                     static_cast<unsigned char>(b));
+  return make_uchar3(static_cast<unsigned char>(r * 255.0),
+                     static_cast<unsigned char>(g * 255.0),
+                     static_cast<unsigned char>(b * 255.0));
 }

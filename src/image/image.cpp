@@ -305,11 +305,7 @@ void Image::RGB2HSV(size_t x, size_t y) {
   if (cmax == cmin) {
     h = 0.0;
   } else if (cmax == r) {
-    if (g >= b) {
-      h = 60.0 * ((g - b) / diff) + 0.0;
-    } else {
-      h = 60.0 * ((g - b) / diff) + 360.0;
-    }
+    h = fmod(60.0 * ((g - b) / diff) + 360.0, 360.0);
   } else if (cmax == g) {
     h = 60.0 * ((b - r) / diff) + 120.0;
   } else if (cmax == b) {

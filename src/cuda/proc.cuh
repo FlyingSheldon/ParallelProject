@@ -23,6 +23,12 @@ __global__ void edgeSharpen(double *hsv, size_t width, size_t height,
                             double value, double eth, int lpf, uint8_t *edges,
                             ValueMinMaxSum *vmms, uint8_t *img);
 
+__global__ void edgeLPFDbg(uint8_t *edges, uint8_t *output, size_t width,
+                           size_t height, int lpf);
+
+__global__ void edgeDetect(double *hsv, uint8_t *edges, size_t width,
+                           size_t height, double eth);
+
 __global__ void writeEdgeToImage(uint8_t *img, uint8_t *edges, size_t size);
 
 __device__ inline void minMaxSum(volatile ValueMinMaxSum &lhs,

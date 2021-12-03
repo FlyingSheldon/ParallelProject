@@ -1,3 +1,4 @@
+// #include "cuda/cuda_proc.h"
 #include "image/image.h"
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -7,7 +8,7 @@
 #include "proc/cuda_proc.h"
 
 TEST(CudaTest, BrightenTest) {
-  std::cout << "Please check test path: " << std::filesystem::current_path()
+  std::cerr << "Please check test path: " << std::filesystem::current_path()
             << std::endl;
 
   CudaImageProc cudaProc;
@@ -39,6 +40,79 @@ TEST(CudaTest, BrightenTest) {
     }
   }
 }
+
+// TEST(CudaTest, EdgeLPFTest) {
+//   auto imgResult = Image::OpenImage("test.jpg");
+//   Image::ImageError *error = std::get_if<Image::ImageError>(&imgResult);
+
+//   ASSERT_FALSE(error) << "Failed to open the file: " << *error;
+
+//   double eth = 0.07;
+//   int lpf = 2;
+
+//   Image img = std::move(std::get<Image>(imgResult));
+
+//   size_t size = img.GetHeight() * img.GetWidth();
+
+//   std::vector<uint8_t> edges(size);
+//   std::vector<uint8_t> lpfOut(size);
+//   std::vector<double> hsv(size * 3);
+
+//   cudaEdgeDetect(img.GetPixelData(0, 0), edges.data(), 3, img.GetWidth(),
+//                  img.GetHeight(), 0.07, hsv.data());
+
+//   cudaEdgeLPFDbg(edges.data(), lpfOut.data(), img.GetWidth(),
+//   img.GetHeight(),
+//                  lpf);
+
+//   rgbToHsv(img);
+//   auto g = edgeDetect(img, eth);
+
+//   for (size_t i = 0; i < size * 3; i++) {
+//     ASSERT_NEAR(hsv[i], img.GetHSVData(0, 0)[i], 0.001);
+//   }
+
+//   for (size_t i = 0; i < size; i++) {
+//     ASSERT_EQ((edges[i] == 1), g[i]);
+//   }
+
+//   lowPassFilter(img, g, lpf);
+
+//   for (size_t i = 0; i < size; i++) {
+//     ASSERT_EQ((lpfOut[i] == 1), g[i]) << i << " not equal";
+//   }
+// }
+
+// TEST(CudaTest, EdgeDetectTest) {
+//   auto imgResult = Image::OpenImage("test.jpg");
+//   Image::ImageError *error = std::get_if<Image::ImageError>(&imgResult);
+
+//   ASSERT_FALSE(error) << "Failed to open the file: " << *error;
+
+//   double eth = 0.07;
+
+//   Image img = std::move(std::get<Image>(imgResult));
+
+//   size_t size = img.GetHeight() * img.GetWidth();
+
+//   std::vector<uint8_t> edges(size);
+//   std::vector<double> hsv(size * 3);
+
+//   cudaEdgeDetect(img.GetPixelData(0, 0), edges.data(), 3, img.GetWidth(),
+//                  img.GetHeight(), 0.07, hsv.data());
+
+//   rgbToHsv(img);
+//   auto g = edgeDetect(img, eth);
+
+//   for (size_t i = 0; i < size * 3; i++) {
+//     ASSERT_NEAR(hsv[i], img.GetHSVData(0, 0)[i], 0.000001);
+//   }
+//   std::cerr << "1522, 0: " << hsv[1522 * 3 - 1] << std::endl;
+
+//   for (size_t i = 0; i < size; i++) {
+//     ASSERT_EQ((edges[i] == 1), g[i]);
+//   }
+// }
 
 TEST(CudaTest, SharpenTest) {
   std::cout << "Please check test path: " << std::filesystem::current_path()

@@ -43,6 +43,47 @@ TEST(HalideTest, BrightenTest) {
   }
 }
 
+TEST(HalideTest, HSVTest) {
+  std::cout << "Please check test path: " << std::filesystem::current_path()
+            << std::endl;
+
+  HalideImageProc halideProc;
+  LinearImageProc linearProc;
+
+
+  halideProc.LoadImage("test.jpg");
+  Halide::Buffer<float> hsv = halideProc.rgbToHsv(); 
+
+  auto res2 = linearProc.LoadImage("test.jpg");
+  Image &img2 = *linearProc.GetImage();
+  rgbToHsv(img2);
+
+  size_t h = 0;
+  size_t s = hsv.width() * hsv.height() * 1;
+  size_t v = hsv.width() * hsv.height() * 2;
+  const float *ptr = hsv.get()->begin();
+  double near = 0.001;
+
+  for (int y = 0; y < img2.GetHeight(); y++) {
+    for (int x = 0; x < img2.GetWidth(); x++) {
+      const double *hsvp2 = img2.GetHSV(x, y);
+      auto p2 = img2.GetPixelData(x, y);
+
+      ASSERT_NEAR((float)hsvp2[0], ptr[h], near)
+          << "Pixel " << x << " " << y << " H not equal";
+      ASSERT_NEAR((float)hsvp2[1], ptr[s], near)
+          << "Pixel " << x << " " << y << " S not equal";
+      ASSERT_NEAR((float)hsvp2[2], ptr[v], near)
+          << "Pixel " << x << " " << y << " V not equal" 
+          << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" << (int)p2[2];
+
+      h++;
+      s++;
+      v++;
+    }
+  }
+}
+
 #else
 
 TEST(HalideTest, PlaceHolderTest) {

@@ -60,3 +60,40 @@ Image *HalideImageProc::GetImage() {
   }
   return &img;
 }
+
+Halide::Buffer<float> HalideImageProc::rgbToHsv() {
+  Halide::Func max_ch, min_ch, diff, hsv;
+  Halide::Var x, y, c;
+
+
+  Halide::Expr R = hImg(x, y, 0) / 255.0f;
+  Halide::Expr G = hImg(x, y, 1) / 255.0f;
+  Halide::Expr B = hImg(x, y, 2) / 255.0f;
+
+  max_ch(x, y) = Halide::max(R, G, B);
+  max_ch.trace_stores();
+  min_ch(x, y) = Halide::min(R, G, B);
+  diff(x ,y) = max_ch(x, y) - min_ch(x, y);
+
+  Halide::Expr V = max_ch(x, y);
+  Halide::Expr C = diff(x, y);
+
+  Halide::Expr H = Halide::select(C == 0, 0, 
+                                  R == V && G >= B, 60 * (0 + (G - B) / C),
+                                  R == V && G < B, 60 * (6 + (G - B) / C),
+                                  G == V, 60 * (2 + (B - R) / C), 60 * (4 + (R - G) / C));
+
+  Halide::Expr S = Halide::select(V == 0, 0, C / V);
+
+  hsv(x, y, c) = Halide::select(c == 0, H,
+                        c == 1, S, V);
+
+  hsv.bound(c, 0, 3)
+    .reorder(c, x, y)
+    .unroll(c, 3);
+
+  Halide::Buffer<float> result = hsv.realize({hImg.width(), hImg.height(), 3});
+  
+  std::swap(hHSV, result);
+  return hHSV;
+}

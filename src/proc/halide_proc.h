@@ -16,9 +16,12 @@ public:
   virtual ImageIOResult SaveImage(std::string filename) override;
   virtual Image *GetImage() override;
 
+  virtual Halide::Buffer<float> rgbToHsv();
+
 #ifdef PP_USE_HALIDE
 private:
   Halide::Buffer<uint8_t> hImg;
+  Halide::Buffer<float> hHSV;
   Image img;
 #endif
 };

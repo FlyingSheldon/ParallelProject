@@ -43,7 +43,7 @@ TEST(HalideTest, BrightenTest) {
   }
 }
 
-TEST(HalideTest, HSVTest) {
+TEST(HalideTest, Rgb2HsvTest) {
   std::cout << "Please check test path: " << std::filesystem::current_path()
             << std::endl;
 
@@ -80,6 +80,40 @@ TEST(HalideTest, HSVTest) {
       h++;
       s++;
       v++;
+    }
+  }
+}
+
+TEST(HalideTest, Hsv2RgbTest) {
+  std::cout << "Please check test path: " << std::filesystem::current_path()
+            << std::endl;
+
+  HalideImageProc halideProc;
+  LinearImageProc linearProc;
+
+  halideProc.LoadImage("test.jpg");
+  halideProc.rgbToHsv(); 
+  halideProc.hsvToRgb();
+  Image &img = *halideProc.GetImage();
+
+  auto res2 = linearProc.LoadImage("test.jpg");
+  Image &img2 = *linearProc.GetImage();
+
+  ASSERT_EQ(img.GetWidth(), img2.GetWidth());
+  ASSERT_EQ(img.GetHeight(), img2.GetHeight());
+
+  double near = 1.0;
+
+  for (int y = 0; y < img.GetHeight(); y++) {
+    for (int x = 0; x < img.GetWidth(); x++) {
+      auto p = img.GetPixelData(x, y);
+      auto p2 = img2.GetPixelData(x, y);
+      ASSERT_NEAR((int)p[0], (int)p2[0], near)
+          << "Pixel " << x << " " << y << " red not equal";
+      ASSERT_NEAR((int)p[1], (int)p2[1], near)
+          << "Pixel " << x << " " << y << " green not equal";
+      ASSERT_NEAR((int)p[2], (int)p2[2], near)
+          << "Pixel " << x << " " << y << " blue not equal";
     }
   }
 }

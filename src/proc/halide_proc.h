@@ -17,6 +17,7 @@ public:
   virtual Image *GetImage() override;
 
   virtual Halide::Buffer<float> rgbToHsv();
+  virtual void hsvToRgb();
 
 #ifdef PP_USE_HALIDE
 private:

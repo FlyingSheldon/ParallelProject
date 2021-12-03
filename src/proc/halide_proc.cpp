@@ -97,3 +97,53 @@ Halide::Buffer<float> HalideImageProc::rgbToHsv() {
   std::swap(hHSV, result);
   return hHSV;
 }
+
+void HalideImageProc::hsvToRgb() {
+  Halide::Func rgb;
+  Halide::Var x, y, c;
+
+  Halide::Expr H = hHSV(x, y, 0);
+  Halide::Expr S = hHSV(x, y, 1);
+  Halide::Expr V = hHSV(x, y, 2);
+
+  Halide::Expr i = H / 60.0f;
+  i = Halide::cast<int>(i);
+  i = i % 6;
+
+  Halide::Expr i_float = Halide::cast<float>(i);
+  Halide::Expr f = H / 60.0f - i_float;
+  Halide::Expr p = V * (1.0f - S);
+  Halide::Expr q = V * (1.0f - f * S);
+  Halide::Expr t = V * (1.0f - (1.0f - f) * S);
+  
+  Halide::Expr r = Halide::select(i == 0 || i == 5, V,
+                                  i == 1, q,
+                                  i == 2 || i == 3, p, t);
+
+  Halide::Expr g = Halide::select(i == 0, t,
+                                  i == 1 || i == 2, V,
+                                  i == 3, q, p);
+  
+  Halide::Expr b = Halide::select(i == 0 || i == 1, p,
+                                  i == 2, t,
+                                  i == 3 || i == 4, V, q);
+  
+
+  r = r * 255.0f;
+  r = Halide::cast<uint8_t>(r);
+  g = g * 255.0f;
+  g = Halide::cast<uint8_t>(g);
+  b = b * 255.0f;
+  b = Halide::cast<uint8_t>(b);
+  
+  rgb(x, y, c) = Halide::select(c == 0, r,
+                                c == 1, g, b);
+  
+  rgb.bound(c, 0, 3)
+    .reorder(c, x, y)
+    .unroll(c, 3);
+
+  Halide::Buffer<uint8_t> result = rgb.realize({hHSV.width(), hHSV.height(), 3});
+  std::swap(hImg, result);
+
+}

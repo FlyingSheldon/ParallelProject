@@ -18,6 +18,7 @@ public:
 
   virtual Halide::Buffer<float> rgbToHsv();
   virtual void hsvToRgb();
+  virtual Halide::Buffer<uint8_t> edgeDetect(double eth);
 
 #ifdef PP_USE_HALIDE
 private:

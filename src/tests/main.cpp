@@ -5,33 +5,35 @@
 
 
 int main(int argc, char **argv) {
-    std::cout << "Please check test path: " << std::filesystem::current_path()
+  std::cout << "Please check test path: " << std::filesystem::current_path()
             << std::endl;
 
   HalideImageProc halideProc;
   LinearImageProc linearProc;
 
+  double eth = 0.07;
   halideProc.LoadImage("test.jpg");
   halideProc.rgbToHsv(); 
-  halideProc.hsvToRgb();
-  Image &img = *halideProc.GetImage();
+  Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
 
   auto res2 = linearProc.LoadImage("test.jpg");
   Image &img2 = *linearProc.GetImage();
+  rgbToHsv(img2);
+  std::vector<bool> g2 = edgeDetect(img2, eth);
 
-//   ASSERT_EQ(img.GetWidth(), img2.GetWidth());
-//   ASSERT_EQ(img.GetHeight(), img2.GetHeight());
+  std::cout << "g1 dim " << g1.dimensions() << std::endl;
+  std::cout << "g1 channel " << g1.channels() << std::endl;
 
-//   for (int y = 0; y < img.GetHeight(); y++) {
-//     for (int x = 0; x < img.GetWidth(); x++) {
-//       auto p = img.GetPixelData(x, y);
-//       auto p2 = img2.GetPixelData(x, y);
-//       ASSERT_EQ((int)p[0], (int)p2[0])
-//           << "Pixel " << x << " " << y << " red not equal";
-//       ASSERT_EQ((int)p[1], (int)p2[1])
-//           << "Pixel " << x << " " << y << " green not equal";
-//       ASSERT_EQ((int)p[2], (int)p2[2])
-//           << "Pixel " << x << " " << y << " blue not equal";
+  const uint8_t *ptr = g1.get()->begin();
+  size_t i = 0; 
+
+//   for (int y = 0; y < g1.height(); y++) {
+//     for (int x = 0; x < g1.width(); x++) {
+//       int index = y * g1.width() + x;
+//       uint8_t value2 = g2[index] ? 1 : 0;
+
+//       ASSERT_EQ(value2, ptr[i++])
+//           << "Pixel " << x << " " << y << " g not equal";
 //     }
 //   }
 }

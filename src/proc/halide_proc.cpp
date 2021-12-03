@@ -147,3 +147,61 @@ void HalideImageProc::hsvToRgb() {
   std::swap(hImg, result);
 
 }
+
+Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
+  Halide::Func edge;
+  Halide::Var x, y, c;
+
+  // 
+  Halide::Func hsv;
+  hsv(x, y, c) = hHSV(x, y, c);
+  hsv.trace_loads();
+
+  // clamp
+  Halide::Func clamped;
+  Halide::Expr clamped_x = Halide::clamp(x, 0, hHSV.width() - 1);
+  Halide::Expr clamped_y = Halide::clamp(x, 0, hHSV.height() - 1);
+  clamped(x, y, c) = hHSV(clamped_x, clamped_y, c);
+
+  Halide::Expr one = 1;
+  one = Halide::cast<uint8_t>(one);
+  Halide::Expr zero = 0;
+  zero = Halide::cast<uint8_t>(zero);
+  Halide::Expr eth_float = (float)eth;
+  eth_float = Halide::cast<float>(eth_float);
+
+  Halide::Expr local = clamped(x, y, 2);
+  Halide::Expr west = clamped(x - 1, y, 2);
+  Halide::Expr north = clamped(x, y - 1, 2);
+
+  local = Halide::print_when(x == 48 && y == 0, local, "<- this is local at x, y == (0, 0)" );
+  west = Halide::print_when(x == 48 && y == 0, west, "<- this is west at x, y == (0, 0)" );
+  north = Halide::print_when(x == 48 && y == 0, north, "<- this is north at x, y == (0, 0)" );
+  
+
+  edge(x, y) = Halide::select(Halide::abs(local - west) >= eth_float || 
+                Halide::abs(local - north) >= eth_float, one, zero);
+
+  clamped.trace_loads();
+
+
+  // local = Halide::print_when(x == 0 && y == 0, local, "<- this is local at x, y == (0, 0)");
+
+  // Halide::Func test;
+  // test(x, y) = Halide::select( Halide::abs(hHSV(x, y, 2) - hHSV(x - 1, y, 2)) >= (float) eth || 
+  //                             Halide::abs(hHSV(x, y, 2) - hHSV(x, y - 1, 2)) >= (float) eth, 1, 0);
+
+  // Halide::Expr west = Halide::select(x >= 1, hHSV(x - 1, y, 2), local + (float)eth + 1.0f);
+  // west = Halide::print_when(x == 0 && y == 0, west, "<- this is west at x, y == (0, 0)");
+
+  // Halide::Expr north = Halide::select(y >= 1, hHSV(x, y - 1, 2), local + (float)eth + 1.0f);
+  // Halide::Expr abs_west = Halide::abs(local - west);
+  // Halide::Expr abs_north = Halide::abs(local - north);
+  
+  // edge(x, y) = Halide::select(abs_north >= (float)eth || abs_west >= (float)eth, 1, 0);
+  std::cout << "6" << std::endl;
+
+  Halide::Buffer<uint8_t> result = edge.realize({hHSV.width(), hHSV.height(), 1});
+  std::cout << "7" << std::endl;
+  return result;
+}

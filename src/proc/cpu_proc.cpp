@@ -86,6 +86,10 @@ bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth) {
     }
   }
 
+  if (x == 48 && y == 0) {
+    printf("local %f, west %f\n", value, image.GetValue(x - 1, y));
+  }
+
   return ans;
 }
 

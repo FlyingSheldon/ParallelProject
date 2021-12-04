@@ -173,27 +173,29 @@ double computelocalMean(Image &image, size_t x, size_t y) {
 }
 
 void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta) {
+  std::vector<double> hsvCopy(image.GetHeight() * image.GetWidth());
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
       int index = y * image.GetWidth() + x;
-      if (!g[index])
+      if (!g[index]) {
+        hsvCopy[y * image.GetWidth() + x] = *image.GetValueData(x, y);
         continue; // nonedge pixels are kept unaltered
+      }
 
       double localMean = computelocalMean(image, x, y);
-      double *value = image.GetValueData(x, y);
+      const double *value = image.GetValueData(x, y);
 
       double factor =
           *value < localMean ? (-*value) / localMean : localMean / *value;
       double value_change = s * delta * factor;
-      *value = *value + value_change;
 
-      if (*value > 1) {
-        *value = 1;
-      }
-
-      if (*value < 0) {
-        *value = 0;
-      }
+      hsvCopy[y * image.GetWidth() + x] =
+          std::max(std::min(*value + value_change, 1.0), 0.0);
+    }
+  }
+  for (int y = 0; y < image.GetHeight(); y++) {
+    for (int x = 0; x < image.GetWidth(); x++) {
+      *image.GetValueData(x, y) = hsvCopy[y * image.GetWidth() + x];
     }
   }
 }

@@ -77,11 +77,20 @@ __global__ void rgbToHsvAndDeltaReduce(uint8_t *rgb, double *hsv, size_t size,
   uchar3 *rgbVec = reinterpret_cast<uchar3 *>(rgb);
   double3 *hsvVec = reinterpret_cast<double3 *>(hsv);
 
-  uchar3 pRgb = rgbVec[i];
-  int v = max(pRgb.x, max(pRgb.y, pRgb.z));
-  smms[tid].min = v;
-  smms[tid].max = v;
-  smms[tid].sum = v;
+  uchar3 pRgb;
+
+  if (i < size) {
+    pRgb = rgbVec[i];
+    int v = max(pRgb.x, max(pRgb.y, pRgb.z));
+    smms[tid].min = v;
+    smms[tid].max = v;
+    smms[tid].sum = v;
+  } else {
+    pRgb = make_uchar3(0, 0, 0);
+    smms[tid].min = 255;
+    smms[tid].max = 0;
+    smms[tid].sum = 0;
+  }
 
   if (blockSize >= 512) {
     if (tid < 256) {
@@ -112,5 +121,7 @@ __global__ void rgbToHsvAndDeltaReduce(uint8_t *rgb, double *hsv, size_t size,
     atomicAdd(&vmms->sum, smms[0].sum);
   }
 
-  hsvVec[i] = rgbToHsv(pRgb);
+  if (i < size) {
+    hsvVec[i] = rgbToHsv(pRgb);
+  }
 }

@@ -193,8 +193,7 @@ __global__ void edgeSharpen(double *hsv, size_t width, size_t height,
   const int pxIdx = py * width + px;
   double3 pHsv;
 
-  // double delta = calcDelta(vmms, width * height);
-  double delta = 0.076665;
+  double delta = calcDelta(vmms, width * height);
 
   localHsvGrid[ty * kBlockEdgeSize + tx] =
       getHsvPixel(hsvVec, px, py, width, height);

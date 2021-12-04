@@ -153,9 +153,9 @@ Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
   Halide::Var x, y, c;
 
   // 
-  Halide::Func hsv;
-  hsv(x, y, c) = hHSV(x, y, c);
-  hsv.trace_loads();
+  // Halide::Func hsv;
+  // hsv(x, y, c) = hHSV(x, y, c);
+  // hsv.trace_loads();
 
   // clamp
   Halide::Func clamped;
@@ -174,14 +174,59 @@ Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
   Halide::Expr west = clamped(x - 1, y, 2);
   Halide::Expr north = clamped(x, y - 1, 2);
 
-  local = Halide::print_when(x == 48 && y == 0, local, "<- this is local at x, y == (0, 0)" );
-  west = Halide::print_when(x == 48 && y == 0, west, "<- this is west at x, y == (0, 0)" );
-  north = Halide::print_when(x == 48 && y == 0, north, "<- this is north at x, y == (0, 0)" );
+  // local = Halide::print_when(x == 48 && y == 0, local, "<- this is local at x, y == (0, 0)" );
+  // west = Halide::print_when(x == 48 && y == 0, west, "<- this is west at x, y == (0, 0)" );
+  // north = Halide::print_when(x == 48 && y == 0, north, "<- this is north at x, y == (0, 0)" );
   
 
   edge(x, y) = Halide::select(Halide::abs(local - west) >= eth_float || 
                 Halide::abs(local - north) >= eth_float, one, zero);
 
   Halide::Buffer<uint8_t> result = edge.realize({hHSV.width(), hHSV.height(), 1});
+  return result;
+}
+
+Halide::Buffer<uint8_t> HalideImageProc::lowPassFilter(Halide::Buffer<uint8_t> g, int lpf)  {
+  Halide::Func lowPass;
+  Halide::Var x, y, c;
+
+  Halide::Expr one = 1;
+  one = Halide::cast<uint8_t>(one);
+  Halide::Expr zero = 0;
+  zero = Halide::cast<uint8_t>(zero);
+
+  Halide::Func clamped;
+  Halide::Expr clamped_x = Halide::clamp(x, 0, g.width() - 1);
+  Halide::Expr clamped_y = Halide::clamp(y, 0, g.height() - 1);
+  clamped(x, y) = g(clamped_x, clamped_y);
+  clamped = Halide::BoundaryConditions::constant_exterior(g, zero);
+
+  Halide::Expr p0 = clamped(x - 1, y - 1);
+  Halide::Expr p1 = clamped(x, y - 1);
+  Halide::Expr p2 = clamped(x + 1, y - 1);
+  Halide::Expr p3 = clamped(x - 1, y);
+  Halide::Expr p4 = clamped(x, y);    // exclude my self
+  Halide::Expr p5 = clamped(x + 1, y);
+  Halide::Expr p6 = clamped(x - 1, y + 1);
+  Halide::Expr p7 = clamped(x, y + 1);
+  Halide::Expr p8 = clamped(x + 1, y + 1);
+  
+  Halide::Expr count = 0;
+  count = Halide::cast<uint8_t>(count);
+
+  count = Halide::select(p0 == one, count + one, count);
+  count = Halide::select(p1 == one, count + one, count);
+  count = Halide::select(p2 == one, count + one, count);
+  count = Halide::select(p3 == one, count + one, count);
+  count = Halide::select(p5 == one, count + one, count);
+  count = Halide::select(p6 == one, count + one, count);
+  count = Halide::select(p7 == one, count + one, count);
+  count = Halide::select(p8 == one, count + one, count);
+
+  Halide::Expr lpf_expr = lpf;
+  lpf_expr = Halide::cast<uint8_t>(lpf_expr);
+  lowPass(x, y) = Halide::select(p4 == one && count >= lpf_expr, one, zero);
+  
+  Halide::Buffer<uint8_t> result = lowPass.realize({g.width(), g.height(), 1});
   return result;
 }

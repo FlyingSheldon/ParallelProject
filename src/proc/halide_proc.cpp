@@ -230,3 +230,27 @@ Halide::Buffer<uint8_t> HalideImageProc::lowPassFilter(Halide::Buffer<uint8_t> g
   Halide::Buffer<uint8_t> result = lowPass.realize({g.width(), g.height(), 1});
   return result;
 }
+
+Halide::Buffer<float> HalideImageProc::additiveMaginitude() {
+  Halide::Func max, min, mid, sum_ch, avg, delta;
+  Halide:: Var x, y, c;
+
+  Halide::Expr v = hHSV(x, y, 2);
+  Halide::Expr two = (float) 2;
+  two = Halide::cast<float> (two);
+  Halide::Expr eight = (float) 8;
+  eight = Halide::cast<float> (eight);
+  
+  // reduction
+  Halide::RDom whole(0, hHSV.width(), 0, hHSV.height());
+  max(x, y) = Halide::maximum(hHSV(x + whole.x, y + whole.y, 2));
+  min(x, y) = Halide::minimum(hHSV(x + whole.x, y + whole.y, 2));
+  mid(x, y) = ( max(x, y) + min(x, y)) / two;
+  sum_ch(x, y) = Halide::sum(hHSV(x + whole.x, y + whole.y, 2));
+  avg(x, y) = sum_ch(x, y) / ((float)hHSV.width() * (float) hHSV.height());
+  delta(x, y) = (max(x, y) / eight) * (avg(x, y) / mid(x, y));
+
+  Halide::Buffer<float> delta_result = delta.realize({1, 1});
+
+  return delta_result;
+}

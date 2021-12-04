@@ -20,6 +20,7 @@ public:
   virtual void hsvToRgb();
   virtual Halide::Buffer<uint8_t> edgeDetect(double eth);
   virtual Halide::Buffer<uint8_t> lowPassFilter(Halide::Buffer<uint8_t> g, int lpf);
+  virtual Halide::Buffer<float> additiveMaginitude();
 
 #ifdef PP_USE_HALIDE
 private:

@@ -10,6 +10,7 @@ struct Conf {
   double sharpness, brightness;
   Impl impl;
   std::optional<std::string> confError;
+  bool useGpu;
 
   Conf(int argc, char **argv);
 };

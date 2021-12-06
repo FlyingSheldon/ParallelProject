@@ -1,28 +1,29 @@
 #include "proc/halide_proc.h"
+#include "halide/brighten_pipeline.h"
 #include <halide_image_io.h>
 #include <iostream>
 
-HalideImageProc::HalideImageProc() {}
+HalideImageProc::HalideImageProc(bool gpu) : useGpu(gpu) {}
 
 void HalideImageProc::Brighten(double value) {
-  Halide::Func brighter;
+  BrightenPipeline p(hImg, value);
+  bool onGpu = false;
 
-  Halide::Var x, y, c;
-
-  Halide::Expr v = hImg(x, y, c);
-
-  v = Halide::cast<float>(v);
-
-  v = v * static_cast<float>(value);
-
-  v = Halide::min(v, 255.0f);
-
-  v = Halide::cast<uint8_t>(v);
-
-  brighter(x, y, c) = v;
+  if (useGpu && p.ScheduleForGpu()) {
+    onGpu = true;
+  } else {
+    p.ScheduleForCpu();
+    onGpu = false;
+  }
 
   Halide::Buffer<uint8_t> output =
-      brighter.realize({hImg.width(), hImg.height(), hImg.channels()});
+      p.brighten.realize({hImg.width(), hImg.height(), hImg.channels()});
+
+  if (onGpu) {
+    output.copy_to_host();
+  }
+
+  // p.brighten.print_loop_nest();
 
   std::swap(hImg, output);
 }

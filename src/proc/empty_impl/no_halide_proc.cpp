@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 
-HalideImageProc::HalideImageProc() {}
+HalideImageProc::HalideImageProc(bool gpu) {}
 
 void HalideImageProc::Brighten(double value) {}
 

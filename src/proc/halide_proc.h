@@ -7,7 +7,7 @@
 
 class HalideImageProc : public ImageProc {
 public:
-  HalideImageProc();
+  HalideImageProc(bool gpu = false);
   virtual void Brighten(double value) override;
   virtual void Sharpen(double value) override;
   virtual bool IsSupported() const override;
@@ -20,5 +20,6 @@ public:
 private:
   Halide::Buffer<uint8_t> hImg;
   Image img;
+  bool useGpu;
 #endif
 };

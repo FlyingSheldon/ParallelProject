@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     proc = std::make_unique<CudaImageProc>();
     break;
   case Impl::HALIDE:
-    proc = std::make_unique<HalideImageProc>();
+    proc = std::make_unique<HalideImageProc>(conf.useGpu);
     break;
   default:
     proc = std::make_unique<LinearImageProc>();

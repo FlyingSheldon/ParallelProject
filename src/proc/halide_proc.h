@@ -8,8 +8,8 @@
 class HalideImageProc : public ImageProc {
 public:
   HalideImageProc();
-  virtual void Brighten(double value) override;
-  virtual void Sharpen(double value) override;
+  virtual void Brighten(float value) override;
+  virtual void Sharpen(float value) override;
   virtual bool IsSupported() const override;
   virtual std::string Name() const override { return "halide"; }
   virtual ImageIOResult LoadImage(std::string filename) override;
@@ -18,10 +18,10 @@ public:
 
   virtual Halide::Buffer<float> rgbToHsv();
   virtual void hsvToRgb();
-  virtual Halide::Buffer<uint8_t> edgeDetect(double eth);
+  virtual Halide::Buffer<uint8_t> edgeDetect(float eth);
   virtual Halide::Buffer<uint8_t> lowPassFilter(Halide::Buffer<uint8_t> g, int lpf);
   virtual Halide::Buffer<float> additiveMaginitude();
-  virtual Halide::Buffer<float>  edgeSharpen(Halide::Buffer<uint8_t> g, double s, Halide::Buffer<float> delta);
+  virtual Halide::Buffer<float>  edgeSharpen(Halide::Buffer<uint8_t> g, float s, Halide::Buffer<float> delta);
 
 #ifdef PP_USE_HALIDE
 private:

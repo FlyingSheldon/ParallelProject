@@ -2,9 +2,9 @@
 #include <limits>
 #include <math.h>
 
-void LinearImageProc::Brighten(double value) { linear::brighten(img, value); }
+void LinearImageProc::Brighten(float value) { linear::brighten(img, value); }
 
-void LinearImageProc::Sharpen(double value) { linear::sharpen(img, value); }
+void LinearImageProc::Sharpen(float value) { linear::sharpen(img, value); }
 
 ImageProc::ImageIOResult LinearImageProc::LoadImage(std::string filename) {
   std::variant<Image, Image::ImageError> res = Image::OpenImage(filename);
@@ -24,27 +24,27 @@ ImageProc::ImageIOResult LinearImageProc::SaveImage(std::string filename) {
 
 namespace linear {
 
-void brighten(Image &image, double value) {
+void brighten(Image &image, float value) {
   for (size_t y = 0; y < image.GetHeight(); y++) {
     for (size_t x = 0; x < image.GetWidth(); x++) {
       uint8_t *p = image.GetPixelData(x, y);
       p[0] = static_cast<uint8_t>(
-          std::min(255.0, static_cast<double>(p[0]) * value));
+          std::min(255.0f, static_cast<float>(p[0]) * value));
       p[1] = static_cast<uint8_t>(
-          std::min(255.0, static_cast<double>(p[1]) * value));
+          std::min(255.0f, static_cast<float>(p[1]) * value));
       p[2] = static_cast<uint8_t>(
-          std::min(255.0, static_cast<double>(p[2]) * value));
+          std::min(255.0f, static_cast<float>(p[2]) * value));
     }
   }
 }
 
-void sharpen(Image &img, double value) {
-  double eth = 0.07;
+void sharpen(Image &img, float value) {
+  float eth = 0.07;
   int lpf = 2;
   rgbToHsv(img);
   std::vector<bool> g = edgeDetect(img, eth);
   lowPassFilter(img, g, lpf);
-  double delta = additiveMaginitude(img);
+  float delta = additiveMaginitude(img);
   edgeSharpen(img, g, value, delta);
   hsvToRgb(img);
 }
@@ -67,19 +67,19 @@ void hsvToRgb(Image &image) {
   }
 }
 
-bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth) {
+bool edgeDetectPixel(Image &image, size_t x, size_t y, float eth) {
   bool ans = false;
-  double value = image.GetValue(x, y);
+  float value = image.GetValue(x, y);
 
   if (x >= 1) {
-    double value_west = image.GetValue(x - 1, y);
+    float value_west = image.GetValue(x - 1, y);
     if (abs(value - value_west) >= eth) {
       ans = true;
     }
   }
 
   if (y >= 1) {
-    double value_north = image.GetValue(x, y - 1);
+    float value_north = image.GetValue(x, y - 1);
 
     if (abs(value - value_north) >= eth) {
       ans = true;
@@ -89,7 +89,7 @@ bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth) {
   return ans;
 }
 
-std::vector<bool> edgeDetect(Image &image, double eth) {
+std::vector<bool> edgeDetect(Image &image, float eth) {
   std::vector<bool> g(image.GetHeight() * image.GetWidth(), false);
   for (size_t y = 0; y < image.GetHeight(); y++) {
     for (size_t x = 0; x < image.GetWidth(); x++) {
@@ -134,30 +134,30 @@ void lowPassFilter(Image &image, std::vector<bool> &g, int lpf) {
   }
 }
 
-double additiveMaginitude(Image &image) {
-  double max = std::numeric_limits<double>::min();
-  double min = std::numeric_limits<double>::max();
-  double total = 0;
+float additiveMaginitude(Image &image) {
+  float max = std::numeric_limits<float>::min();
+  float min = std::numeric_limits<float>::max();
+  float total = 0;
 
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
-      const double value = image.GetValue(x, y);
+      const float value = image.GetValue(x, y);
       max = std::max(max, value);
       min = std::min(min, value);
       total += value;
     }
   }
 
-  double mid = (max + min) / 2.0;
-  double avg = (total / (double)image.GetHeight()) / (double)image.GetWidth();
+  float mid = (max + min) / 2.0;
+  float avg = (total / (float)image.GetHeight()) / (float)image.GetWidth();
 
-  double delta = (max / 8.0) * (avg / mid);
+  float delta = (max / 8.0) * (avg / mid);
   printf("max:%f, mid:%f, avg:%f, delta: %f\n", max, mid, avg, delta);
   return delta;
 }
 
-double computelocalMean(Image &image, size_t x, size_t y) {
-  double localSum = image.GetValue(x, y);
+float computelocalMean(Image &image, size_t x, size_t y) {
+  float localSum = image.GetValue(x, y);
   int localCnt = 1;
   for (int i = 0; i < 8; i++) {
     size_t newX = x + dx[i];
@@ -168,12 +168,12 @@ double computelocalMean(Image &image, size_t x, size_t y) {
       localCnt++;
     }
   }
-  double localMean = localSum / (double)localCnt;
+  float localMean = localSum / (float)localCnt;
   return localMean;
 }
 
-void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta) {
-  std::vector<double> hsvCopy(image.GetHeight() * image.GetWidth());
+void edgeSharpen(Image &image, std::vector<bool> &g, float s, float delta) {
+  std::vector<float> hsvCopy(image.GetHeight() * image.GetWidth());
   for (int y = 0; y < image.GetHeight(); y++) {
     for (int x = 0; x < image.GetWidth(); x++) {
       int index = y * image.GetWidth() + x;
@@ -182,15 +182,15 @@ void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta) {
         continue; // nonedge pixels are kept unaltered
       }
 
-      double localMean = computelocalMean(image, x, y);
-      const double *value = image.GetValueData(x, y);
+      float localMean = computelocalMean(image, x, y);
+      const float *value = image.GetValueData(x, y);
 
-      double factor =
+      float factor =
           *value < localMean ? (-*value) / localMean : localMean / *value;
-      double value_change = s * delta * factor;
+      float value_change = s * delta * factor;
 
       hsvCopy[y * image.GetWidth() + x] =
-          std::max(std::min(*value + value_change, 1.0), 0.0);
+          std::max(std::min(*value + value_change, 1.0f), 0.0f);
     }
   }
   for (int y = 0; y < image.GetHeight(); y++) {

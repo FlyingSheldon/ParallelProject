@@ -265,42 +265,42 @@ const uint8_t *Image::GetPixelData(size_t x, size_t y) const {
 
 uint8_t Image::GetLuminance(size_t x, size_t y) const {
   const uint8_t *p = GetPixelData(x, y);
-  double r = static_cast<double>(p[0]);
-  double g = static_cast<double>(p[1]);
-  double b = static_cast<double>(p[2]);
+  float r = static_cast<float>(p[0]);
+  float g = static_cast<float>(p[1]);
+  float b = static_cast<float>(p[2]);
 
   return static_cast<uint8_t>(r * kRLumWeight + g * kGLumWeight +
                               b * kBLumWeight);
 }
 
-double *Image::GetHSVData(size_t x, size_t y) {
+float *Image::GetHSVData(size_t x, size_t y) {
   return &m_hsvData[y * m_width * m_pixelSize + x * m_pixelSize];
 }
 
-const double *Image::GetHSV(size_t x, size_t y) const {
+const float *Image::GetHSV(size_t x, size_t y) const {
   return m_hsvData.data() + (y * m_width * m_pixelSize + x * m_pixelSize);
 }
 
-double *Image::GetValueData(size_t x, size_t y) {
-  double *hsv = GetHSVData(x, y);
+float *Image::GetValueData(size_t x, size_t y) {
+  float *hsv = GetHSVData(x, y);
   return &hsv[2];
 }
 
-const double Image::GetValue(size_t x, size_t y) const {
-  const double *hsv = GetHSV(x, y);
+const float Image::GetValue(size_t x, size_t y) const {
+  const float *hsv = GetHSV(x, y);
   return hsv[2];
 }
 
 void Image::RGB2HSV(size_t x, size_t y) {
   const uint8_t *p = GetPixelData(x, y);
-  double r = static_cast<double>(p[0]) / 255.0;
-  double g = static_cast<double>(p[1]) / 255.0;
-  double b = static_cast<double>(p[2]) / 255.0;
+  float r = static_cast<float>(p[0]) / 255.0;
+  float g = static_cast<float>(p[1]) / 255.0;
+  float b = static_cast<float>(p[2]) / 255.0;
 
-  double cmax = std::max(r, std::max(g, b));
-  double cmin = std::min(r, std::min(g, b));
-  double diff = cmax - cmin;
-  double h = -1.0, s = -1.0;
+  float cmax = std::max(r, std::max(g, b));
+  float cmin = std::min(r, std::min(g, b));
+  float diff = cmax - cmin;
+  float h = -1.0, s = -1.0;
 
   if (cmax == cmin) {
     h = 0.0;
@@ -323,26 +323,26 @@ void Image::RGB2HSV(size_t x, size_t y) {
     s = diff / cmax;
   }
 
-  double v = cmax;
+  float v = cmax;
 
-  double *hsvx = GetHSVData(x, y);
+  float *hsvx = GetHSVData(x, y);
   hsvx[0] = h;
   hsvx[1] = s;
   hsvx[2] = v;
 }
 
 void Image::HSV2RGB(size_t x, size_t y) {
-  const double *hsv = GetHSV(x, y);
-  double h = hsv[0];
-  double s = hsv[1];
-  double v = hsv[2];
+  const float *hsv = GetHSV(x, y);
+  float h = hsv[0];
+  float s = hsv[1];
+  float v = hsv[2];
 
   int i = (int)floor(h / 60.0) % 6;
-  double f = h / 60.0 - (double)i;
-  double p = v * (1.0 - s);
-  double q = v * (1.0 - f * s);
-  double t = v * (1.0 - (1.0 - f) * s);
-  double r, g, b;
+  float f = h / 60.0 - (float)i;
+  float p = v * (1.0 - s);
+  float q = v * (1.0 - f * s);
+  float t = v * (1.0 - (1.0 - f) * s);
+  float r, g, b;
 
   switch (i) {
   case 0:
@@ -368,14 +368,14 @@ void Image::HSV2RGB(size_t x, size_t y) {
   }
 
   uint8_t *px = GetPixelData(x, y);
-  px[0] = static_cast<double>(r * 255);
-  px[1] = static_cast<double>(g * 255);
-  px[2] = static_cast<double>(b * 255);
+  px[0] = static_cast<float>(r * 255);
+  px[1] = static_cast<float>(g * 255);
+  px[2] = static_cast<float>(b * 255);
 }
 
 void Image::AddLuminance(size_t x, size_t y, int value) {
   uint8_t *p = GetPixelData(x, y);
-  double dr = static_cast<double>(value) * kRLumWeight;
-  double dg = static_cast<double>(value) * kGLumWeight;
-  double db = static_cast<double>(value) * kBLumWeight;
+  float dr = static_cast<float>(value) * kRLumWeight;
+  float dg = static_cast<float>(value) * kGLumWeight;
+  float db = static_cast<float>(value) * kBLumWeight;
 }

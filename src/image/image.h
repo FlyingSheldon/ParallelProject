@@ -27,9 +27,9 @@ public:
 public:
   using ImageError = std::string;
 
-  static constexpr double kRLumWeight = 0.2126;
-  static constexpr double kGLumWeight = 0.7152;
-  static constexpr double kBLumWeight = 0.0722;
+  static constexpr float kRLumWeight = 0.2126;
+  static constexpr float kGLumWeight = 0.7152;
+  static constexpr float kBLumWeight = 0.0722;
 
   static std::variant<Image, ImageError> OpenImage(const std::string &filename);
 
@@ -78,18 +78,18 @@ public:
   uint8_t *GetPixelData(size_t x, size_t y);
   const uint8_t *GetPixelData(size_t x, size_t y) const;
 
-  double *GetValueData(size_t x, size_t y);
-  const double GetValue(size_t x, size_t y) const;
+  float *GetValueData(size_t x, size_t y);
+  const float GetValue(size_t x, size_t y) const;
 
-  double *GetHSVData(size_t x, size_t y);
-  const double *GetHSV(size_t x, size_t y) const;
+  float *GetHSVData(size_t x, size_t y);
+  const float *GetHSV(size_t x, size_t y) const;
 
   void RGB2HSV(size_t x, size_t y);
   void HSV2RGB(size_t x, size_t y);
 
 private:
   std::vector<uint8_t> m_bitmapData;
-  std::vector<double> m_hsvData;
+  std::vector<float> m_hsvData;
   size_t m_width;
   size_t m_height;
   size_t m_pixelSize;

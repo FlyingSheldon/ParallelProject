@@ -4,11 +4,11 @@
 
 CudaImageProc::CudaImageProc() {}
 
-void CudaImageProc::Brighten(double value) {
+void CudaImageProc::Brighten(float value) {
   std::cout << "Brightened by CUDA" << std::endl;
 }
 
-void CudaImageProc::Sharpen(double value) {
+void CudaImageProc::Sharpen(float value) {
   std::cout << "Brightened by CUDA" << std::endl;
 }
 

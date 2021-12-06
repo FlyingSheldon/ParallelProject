@@ -8,8 +8,8 @@ const int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 class ImageProc {
 public:
   using ImageIOResult = std::variant<std::monostate, Image::ImageError>;
-  virtual void Brighten(double value) {}
-  virtual void Sharpen(double value) {}
+  virtual void Brighten(float value) {}
+  virtual void Sharpen(float value) {}
   virtual bool IsSupported() const { return false; }
   virtual std::string Name() const { return ""; }
   virtual ImageIOResult LoadImage(std::string filename) {
@@ -23,8 +23,8 @@ public:
 
 class LinearImageProc : public ImageProc {
 public:
-  virtual void Brighten(double value) override;
-  virtual void Sharpen(double value) override;
+  virtual void Brighten(float value) override;
+  virtual void Sharpen(float value) override;
   virtual bool IsSupported() const override { return true; }
   virtual std::string Name() const override { return "linear"; }
   virtual ImageIOResult LoadImage(std::string filename) override;
@@ -36,8 +36,8 @@ private:
 };
 
 namespace linear {
-void brighten(Image &image, double value);
-void sharpen(Image &image, double value);
+void brighten(Image &image, float value);
+void sharpen(Image &image, float value);
 } // namespace linear
 
 void rgbToHsv(Image &image);
@@ -50,8 +50,8 @@ void hsvToRgb(Image &image);
  * @param eth      threshold, [8,18] is suitable
  * @return         HVD image
  */
-std::vector<bool> edgeDetect(Image &image, double eth);
-bool edgeDetectPixel(Image &image, size_t x, size_t y, double eth);
+std::vector<bool> edgeDetect(Image &image, float eth);
+bool edgeDetectPixel(Image &image, size_t x, size_t y, float eth);
 
 /**
  * @brief Add LPF to the HVD image
@@ -64,8 +64,8 @@ void lowPassFilter(Image &image, std::vector<bool> &g, int lpf);
 bool lowPassFilterPixel(Image &image, std::vector<bool> &g, size_t x, size_t y,
                         int lpf);
 
-double additiveMaginitude(Image &image);
-double computelocalMean(Image &image, size_t x, size_t y);
+float additiveMaginitude(Image &image);
+float computelocalMean(Image &image, size_t x, size_t y);
 
 /**
  * @brief
@@ -75,4 +75,4 @@ double computelocalMean(Image &image, size_t x, size_t y);
  * @param s            scaling factor controls degree of sharpness, [0, 1]
  * @param delta        additive magnitude
  */
-void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta);
+void edgeSharpen(Image &image, std::vector<bool> &g, float s, float delta);

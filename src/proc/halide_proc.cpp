@@ -4,7 +4,7 @@
 
 HalideImageProc::HalideImageProc() {}
 
-void HalideImageProc::Brighten(double value) {
+void HalideImageProc::Brighten(float value) {
   Halide::Func brighter;
 
   Halide::Var x, y, c;
@@ -27,7 +27,7 @@ void HalideImageProc::Brighten(double value) {
   std::swap(hImg, output);
 }
 
-void HalideImageProc::Sharpen(double value) {
+void HalideImageProc::Sharpen(float value) {
   std::cout << "Brightened by Halide" << std::endl;
 }
 
@@ -148,7 +148,7 @@ void HalideImageProc::hsvToRgb() {
 
 }
 
-Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
+Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(float eth) {
   Halide::Func edge;
   Halide::Var x, y, c;
 
@@ -255,7 +255,7 @@ Halide::Buffer<float> HalideImageProc::additiveMaginitude() {
   return delta_result;
 }
 
-Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, double s, Halide::Buffer<float> delta) {
+Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, float s, Halide::Buffer<float> delta) {
   Halide::Func sharpen;
   Halide::Var x, y, c;
 

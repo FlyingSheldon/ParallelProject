@@ -4,9 +4,9 @@
 
 CudaImageProc::CudaImageProc() {}
 
-void CudaImageProc::Brighten(double value) {}
+void CudaImageProc::Brighten(float value) {}
 
-void CudaImageProc::Sharpen(double value) {}
+void CudaImageProc::Sharpen(float value) {}
 
 bool CudaImageProc::IsSupported() const { return false; }
 

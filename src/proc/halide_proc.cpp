@@ -254,3 +254,105 @@ Halide::Buffer<float> HalideImageProc::additiveMaginitude() {
 
   return delta_result;
 }
+
+Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, double s, Halide::Buffer<float> delta) {
+  Halide::Func sharpen;
+  Halide::Var x, y, c;
+
+  Halide::Expr one = 1;
+  one = Halide::cast<uint8_t>(one);
+  Halide::Expr zero = 0;
+  zero = Halide::cast<uint8_t>(zero);
+  Halide::Expr two = 2;
+  two = Halide::cast<uint8_t>(two);  // used to mark that point doesn't exist
+  Halide::Expr minus_one = -1;
+  minus_one = Halide::cast<float>(minus_one);
+  Halide::Expr one_float = 1;
+  one_float = Halide::cast<uint8_t>(one_float);
+  Halide::Expr zero_float = 0;
+  zero_float = Halide::cast<uint8_t>(zero_float);
+  Halide::Expr s_float = (float)s;
+  s_float = Halide::cast<float>(s_float);
+  float delta_value = delta.get()->begin()[0];
+  Halide::Expr delta_float = delta_value;
+  delta_float = Halide::cast<float>(delta_float);
+
+  Halide::Func clamped_hsv;
+  Halide::Expr clamped_x = Halide::clamp(x, 0, hHSV.width() - 1);
+  Halide::Expr clamped_y = Halide::clamp(y, 0, hHSV.height() - 1);
+  clamped_hsv(x, y, c) = hHSV(clamped_x, clamped_y, c);
+  
+  Halide::Func clamped_g;
+  Halide::Expr clamped_xg = Halide::clamp(x, 0, g.width() - 1);
+  Halide::Expr clamped_yg = Halide::clamp(y, 0, g.height() - 1);
+  clamped_g(x, y) = g(clamped_xg, clamped_yg);
+  clamped_g = Halide::BoundaryConditions::constant_exterior(g, two);  // mark as not exist
+
+
+  // pixel
+  Halide::Expr p0 = clamped_hsv(x - 1, y - 1, 2);
+  Halide::Expr p1 = clamped_hsv(x, y - 1, 2);
+  Halide::Expr p2 = clamped_hsv(x + 1, y - 1, 2);
+  Halide::Expr p3 = clamped_hsv(x - 1, y, 2);
+  Halide::Expr p4 = clamped_hsv(x, y, 2);    // exclude my self
+  Halide::Expr p5 = clamped_hsv(x + 1, y, 2);
+  Halide::Expr p6 = clamped_hsv(x - 1, y + 1, 2);
+  Halide::Expr p7 = clamped_hsv(x, y + 1, 2);
+  Halide::Expr p8 = clamped_hsv(x + 1, y + 1, 2);
+
+  // gate
+  Halide::Expr g0 = clamped_g(x - 1, y - 1);
+  Halide::Expr g1 = clamped_g(x, y - 1);
+  Halide::Expr g2 = clamped_g(x + 1, y - 1);
+  Halide::Expr g3 = clamped_g(x - 1, y);
+  Halide::Expr g4 = clamped_g(x, y);    // exclude my self
+  Halide::Expr g5 = clamped_g(x + 1, y);
+  Halide::Expr g6 = clamped_g(x - 1, y + 1);
+  Halide::Expr g7 = clamped_g(x, y + 1);
+  Halide::Expr g8 = clamped_g(x + 1, y + 1);
+  
+  Halide::Expr count = 0;
+  count = Halide::cast<uint8_t>(count);
+  count = Halide::select(g0 != two, count + one, count);
+  count = Halide::select(g1 != two, count + one, count);
+  count = Halide::select(g2 != two, count + one, count);
+  count = Halide::select(g3 != two, count + one, count);
+  count = Halide::select(g5 != two, count + one, count);
+  count = Halide::select(g6 != two, count + one, count);
+  count = Halide::select(g7 != two, count + one, count);
+  count = Halide::select(g8 != two, count + one, count);
+
+  Halide::Expr sum = 0;
+  sum = Halide::cast<float>(sum);
+  sum = Halide::select(g0 != two, sum + p0, sum);
+  sum = Halide::select(g1 != two, sum + p1, sum);
+  sum = Halide::select(g2 != two, sum + p2, sum);
+  sum = Halide::select(g3 != two, sum + p3, sum);
+  sum = Halide::select(g5 != two, sum + p5, sum);
+  sum = Halide::select(g6 != two, sum + p6, sum);
+  sum = Halide::select(g7 != two, sum + p7, sum);
+  sum = Halide::select(g8 != two, sum + p8, sum);
+
+  Halide::Expr mean = sum / count;
+  Halide::Expr oldV = hHSV(x, y, 2);
+
+  Halide::Expr factor = Halide::select(oldV < mean, minus_one * oldV / mean,
+                                     mean / oldV);
+
+  // Halide::Expr newV = Halide::max(Halide::min(oldV + s_float * delta_float * factor, one_float), zero_float);   
+
+  // Alternative
+  Halide::Expr newV = Halide::select( g4 == zero, oldV,
+                                      oldV + s_float * delta_float * factor);
+  newV = Halide::max(Halide::min(newV, one_float), zero_float);
+
+  Halide::Expr oldH = hHSV(x, y, 0);
+  Halide::Expr oldS = hHSV(x, y, 1);
+  
+  sharpen(x, y, c) = Halide::select(c == 0, oldH, 
+                                    c == 1, oldS, newV);
+
+  Halide::Buffer<float> result = sharpen.realize({hHSV.width(), hHSV.height(), 3});
+  hHSV = result;
+  return result;
+}

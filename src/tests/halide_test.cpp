@@ -205,11 +205,61 @@ TEST(HalideTest, AdditiveMagintudeTest) {
   std::vector<bool> g2 = edgeDetect(img2, eth);
   lowPassFilter(img2, g2, lpf);
   float delta2 = additiveMaginitude(img2);
-  float near = 0.004;
+  float near = 0.04;
 
   ASSERT_NEAR(delta2, delta1.get()->begin()[0], near);
 }
 
+TEST(HalideTest, EdgeSharpenTest) {
+  std::cout << "Please check test path: " << std::filesystem::current_path()
+            << std::endl;
+
+  HalideImageProc halideProc;
+  LinearImageProc linearProc;
+
+  double eth = 0.07;
+  int lpf = 2;
+  double scale = 0.5;
+  halideProc.LoadImage("test.jpg");
+  halideProc.rgbToHsv(); 
+  Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
+  Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
+  Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
+  Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1, scale, delta1);
+
+  auto res2 = linearProc.LoadImage("test.jpg");
+  Image &img2 = *linearProc.GetImage();
+  rgbToHsv(img2);
+  std::vector<bool> g2 = edgeDetect(img2, eth);
+  lowPassFilter(img2, g2, lpf);
+  float delta2 = additiveMaginitude(img2);
+  edgeSharpen(img2, g2, scale, delta2);
+
+  size_t h = 0;
+  size_t s = hsv.width() * hsv.height() * 1;
+  size_t v = hsv.width() * hsv.height() * 2;
+  const float *ptr = hsv.get()->begin();
+  double near = 0.08;
+
+  for (int y = 0; y < img2.GetHeight(); y++) {
+    for (int x = 0; x < img2.GetWidth(); x++) {
+      const double *hsvp2 = img2.GetHSV(x, y);
+      auto p2 = img2.GetPixelData(x, y);
+
+      ASSERT_NEAR((float)hsvp2[0], ptr[h], near)
+          << "Pixel " << x << " " << y << " H not equal";
+      ASSERT_NEAR((float)hsvp2[1], ptr[s], near)
+          << "Pixel " << x << " " << y << " S not equal";
+      ASSERT_NEAR((float)hsvp2[2], ptr[v], near)
+          << "Pixel " << x << " " << y << " V not equal" 
+          << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" << (int)p2[2];
+
+      h++;
+      s++;
+      v++;
+    }
+  }
+}
 #else
 
 TEST(HalideTest, PlaceHolderTest) {

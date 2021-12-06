@@ -260,6 +260,53 @@ TEST(HalideTest, EdgeSharpenTest) {
     }
   }
 }
+
+TEST(HalideTest, AllTest) {
+  std::cout << "Please check test path: " << std::filesystem::current_path()
+            << std::endl;
+
+  HalideImageProc halideProc;
+  LinearImageProc linearProc;
+
+  double eth = 0.07;
+  int lpf = 2;
+  double scale = 0.5;
+  halideProc.LoadImage("test.jpg");
+  halideProc.rgbToHsv(); 
+  Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
+  Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
+  Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
+  Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1, scale, delta1);
+  halideProc.hsvToRgb();
+  Image &img = *halideProc.GetImage();
+
+  auto res2 = linearProc.LoadImage("test.jpg");
+  Image &img2 = *linearProc.GetImage();
+  rgbToHsv(img2);
+  std::vector<bool> g2 = edgeDetect(img2, eth);
+  lowPassFilter(img2, g2, lpf);
+  float delta2 = additiveMaginitude(img2);
+  edgeSharpen(img2, g2, scale, delta2);
+  hsvToRgb(img2);
+
+  ASSERT_EQ(img.GetWidth(), img2.GetWidth());
+  ASSERT_EQ(img.GetHeight(), img2.GetHeight());
+
+  double near = 20.0;
+
+  for (int y = 0; y < img.GetHeight(); y++) {
+    for (int x = 0; x < img.GetWidth(); x++) {
+      auto p = img.GetPixelData(x, y);
+      auto p2 = img2.GetPixelData(x, y);
+      ASSERT_NEAR((int)p[0], (int)p2[0], near)
+          << "Pixel " << x << " " << y << " red not equal";
+      ASSERT_NEAR((int)p[1], (int)p2[1], near)
+          << "Pixel " << x << " " << y << " green not equal";
+      ASSERT_NEAR((int)p[2], (int)p2[2], near)
+          << "Pixel " << x << " " << y << " blue not equal";
+    }
+  }
+}
 #else
 
 TEST(HalideTest, PlaceHolderTest) {

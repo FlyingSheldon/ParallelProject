@@ -7,10 +7,10 @@ enum class Impl { LINEAR, CUDA, HALIDE };
 struct Conf {
   std::string input;
   std::string output;
-  bool showTime;
   double sharpness, brightness;
   Impl impl;
   std::optional<std::string> confError;
+  bool showTime;
 
   Conf(int argc, char **argv);
 };

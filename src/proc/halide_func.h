@@ -30,12 +30,15 @@ public:
     deltaFunc = this->additiveMaginitude(hsvFunc);
     sharpenHsvFunc = this->edgeSharpen(hsvFunc, lowPassFunc, s, deltaFunc);
     sharpen = this->hsvToRgbFunc(sharpenHsvFunc);
+  }
 
+  void ScheduleForCpu() {
+    hsvFunc.compute_root();
     deltaFunc.compute_root();
   }
 
   Halide::Func rgbToHsvFunc(Halide::Func input) {
-    Halide::Func max_ch, min_ch, diff, hsv;
+    Halide::Func max_ch, min_ch, diff, hsv("hsv"), hf("hf"), sf("sf"), vf("vf");
 
     Halide::Expr R = input(x, y, 0) / 255.0f;
     Halide::Expr G = input(x, y, 1) / 255.0f;
@@ -45,17 +48,25 @@ public:
     min_ch(x, y) = Halide::min(R, G, B);
     diff(x, y) = max_ch(x, y) - min_ch(x, y);
 
-    Halide::Expr V = max_ch(x, y);
+    vf(x, y) = max_ch(x, y);
+    Halide::Expr V = vf(x, y);
     Halide::Expr C = diff(x, y);
 
-    Halide::Expr H =
+    hf(x, y) =
         Halide::select(C == 0, 0, R == V && G >= B, 60 * (0 + (G - B) / C),
                        R == V && G < B, 60 * (6 + (G - B) / C), G == V,
                        60 * (2 + (B - R) / C), 60 * (4 + (R - G) / C));
+    Halide::Expr H = hf(x, y);
 
-    Halide::Expr S = Halide::select(V == 0, 0, C / V);
+    sf(x, y) = Halide::select(V == 0, 0, C / V);
+    Halide::Expr S = sf(x, y);
 
     hsv(x, y, c) = Halide::select(c == 0, H, c == 1, S, V);
+
+    hsv.reorder(c, x, y).bound(c, 0, 3).unroll(c, 3);
+    hf.compute_at(hsv, x);
+    sf.compute_at(hsv, x);
+    vf.compute_at(hsv, x);
 
     return hsv;
   }
@@ -123,11 +134,12 @@ public:
   }
 
   Halide::Func additiveMaginitude(Halide::Func hsv) {
-    Halide::Func max, min, mid, sum_ch, avg, delta;
+    Halide::Func max("max"), min("min"), mid("mid"), sum_ch("sum"), avg("avg"),
+        delta("del");
 
     Halide::Expr v = hsv(x, y, 2);
-    Halide::Expr OUT_BOUND = (float)2;
-    OUT_BOUND = Halide::cast<float>(OUT_BOUND);
+    Halide::Expr two = (float)2;
+    two = Halide::cast<float>(two);
     Halide::Expr eight = (float)8;
     eight = Halide::cast<float>(eight);
 
@@ -138,7 +150,7 @@ public:
     // min(0, 0) = Halide::minimum(hsv(whole.x, whole.y, 2));
     min(x, y) = Halide::minimum(hsv(x + whole.x, y + whole.y, 2));
     // mid(0, 0) = (max(0, 0) + min(0, 0)) / OUT_BOUND;
-    mid(x, y) = (max(x, y) + min(x, y)) / OUT_BOUND;
+    mid(x, y) = (max(x, y) + min(x, y)) / two;
     // sum_ch(0, 0) = Halide::sum(hsv(whole.x, whole.y, 2));
     sum_ch(x, y) = Halide::sum(hsv(x + whole.x, y + whole.y, 2));
     // avg(0, 0) = sum_ch(0, 0) / ((float)width * (float)height);

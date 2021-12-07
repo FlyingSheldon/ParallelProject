@@ -320,6 +320,7 @@ TEST(HalideTest, FuncTest) {
   Halide::Buffer<uint8_t> hImg = LoadImage("test.jpg"); // get width and height
   SharpenPipeline p(hImg, scale);
 
+  p.ScheduleForCpu();
   Halide::Buffer<uint8_t> result =
       p.sharpen.realize({hImg.width(), hImg.height(), 3});
   std::cout << "Halide done!" << std::endl;

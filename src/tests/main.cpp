@@ -2,28 +2,24 @@
 #include <filesystem>
 #include <iostream>
 #include "proc/halide_proc.h"
+#include "proc/halide_func.h"
 
 
 int main(int argc, char **argv) {
-  HalideImageProc halideProc;
   LinearImageProc linearProc;
 
   double eth = 0.07;
   int lpf = 2;
-  double s = 0.5;
-  halideProc.LoadImage("test.jpg");
-  halideProc.rgbToHsv(); 
-  Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
-  Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
-  Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
-  Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1, s, delta1);
+  double scale = 0.5;
 
-  auto res2 = linearProc.LoadImage("test.jpg");
-  Image &img2 = *linearProc.GetImage();
-  rgbToHsv(img2);
-  std::vector<bool> g2 = edgeDetect(img2, eth);
-  lowPassFilter(img2, g2, lpf);
-  float delta2 = additiveMaginitude(img2);
-  edgeSharpen(img2, g2, s, delta2);
+  Halide::Buffer<uint8_t> hImg = LoadImage("test.jpg");  // get width and height
+  Halide::Func input = LoadImageFunc(hImg);
+  Halide::Func hsv = rgbToHsvFunc(input);
+  Halide::Func edge = edgeDetect(hsv, eth, hImg.width(), hImg.height());
+  Halide::Func lowPass = lowPassFilter(edge, lpf, hImg.width(), hImg.height());
+  Halide::Func delta = additiveMaginitude(hsv, hImg.width(), hImg.height());  // just return a float ?
+  Halide::Func sharpen = edgeSharpen(hsv, lowPass, scale, delta, hImg.width(), hImg.height());
+  Halide::Func rgb = hsvToRgbFunc(sharpen);
+  Halide::Buffer<uint8_t> result = rgb.realize({hImg.width(), hImg.height(), 3});
 
 }

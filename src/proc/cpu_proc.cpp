@@ -195,6 +195,10 @@ void edgeSharpen(Image &image, std::vector<bool> &g, double s, double delta) {
 
       hsvCopy[y * image.GetWidth() + x] =
           std::max(std::min(*value + value_change, 1.0), 0.0);
+
+      if (x == 179 && y == 0) {
+        printf("value:%f, new value:%f\n", *value, hsvCopy[y * image.GetWidth() + x]);
+      }
     }
   }
   for (int y = 0; y < image.GetHeight(); y++) {

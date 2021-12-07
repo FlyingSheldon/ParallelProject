@@ -1,74 +1,26 @@
-#include "proc/halide_proc.h"
+#include "proc/halide_func.h"
 #include <halide_image_io.h>
-#include <iostream>
 
-HalideImageProc::HalideImageProc() {}
+Halide::Buffer<uint8_t> LoadImage(std::string filename) {
+  Halide::Buffer<uint8_t> hImg = Halide::Tools::load_image(filename);
+  return hImg;
+}
 
-void HalideImageProc::Brighten(double value) {
-  Halide::Func brighter;
-
+Halide::Func LoadImageFunc(Halide::Buffer<uint8_t> hImg) {
+  Halide::Func output;
   Halide::Var x, y, c;
-
-  Halide::Expr v = hImg(x, y, c);
-
-  v = Halide::cast<float>(v);
-
-  v = v * static_cast<float>(value);
-
-  v = Halide::min(v, 255.0f);
-
-  v = Halide::cast<uint8_t>(v);
-
-  brighter(x, y, c) = v;
-
-  Halide::Buffer<uint8_t> output =
-      brighter.realize({hImg.width(), hImg.height(), hImg.channels()});
-
-  std::swap(hImg, output);
+  output(x, y, c) = hImg(x, y, c);
+  return output;
 }
 
-void HalideImageProc::Sharpen(double value) {
-  std::cout << "Brightened by Halide" << std::endl;
-}
-
-bool HalideImageProc::IsSupported() const { return true; }
-
-ImageProc::ImageIOResult HalideImageProc::LoadImage(std::string filename) {
-  hImg = Halide::Tools::load_image(filename);
-  return {};
-}
-
-ImageProc::ImageIOResult HalideImageProc::SaveImage(std::string filename) {
-  Halide::Tools::save_image(hImg, filename);
-  return {};
-}
-
-Image *HalideImageProc::GetImage() {
-  img = Image(hImg.width(), hImg.height(), 3, J_COLOR_SPACE::JCS_RGB);
-  auto buf = hImg.get();
-  size_t r = 0;
-  size_t g = hImg.width() * hImg.height() * 1;
-  size_t b = hImg.width() * hImg.height() * 2;
-  const uint8_t *ptr = hImg.get()->begin();
-  for (int y = 0; y < img.GetHeight(); y++) {
-    for (int x = 0; x < img.GetWidth(); x++) {
-      uint8_t *p = img.GetPixelData(x, y);
-      p[0] = ptr[r++];
-      p[1] = ptr[g++];
-      p[2] = ptr[b++];
-    }
-  }
-  return &img;
-}
-
-Halide::Buffer<float> HalideImageProc::rgbToHsv() {
+Halide::Func rgbToHsvFunc(Halide::Func input) {
   Halide::Func max_ch, min_ch, diff, hsv;
   Halide::Var x, y, c;
 
 
-  Halide::Expr R = hImg(x, y, 0) / 255.0f;
-  Halide::Expr G = hImg(x, y, 1) / 255.0f;
-  Halide::Expr B = hImg(x, y, 2) / 255.0f;
+  Halide::Expr R = input(x, y, 0) / 255.0f;
+  Halide::Expr G = input(x, y, 1) / 255.0f;
+  Halide::Expr B = input(x, y, 2) / 255.0f;
 
   max_ch(x, y) = Halide::max(R, G, B);
   max_ch.trace_stores();
@@ -87,24 +39,17 @@ Halide::Buffer<float> HalideImageProc::rgbToHsv() {
 
   hsv(x, y, c) = Halide::select(c == 0, H,
                         c == 1, S, V);
-
-  hsv.bound(c, 0, 3)
-    .reorder(c, x, y)
-    .unroll(c, 3);
-
-  Halide::Buffer<float> result = hsv.realize({hImg.width(), hImg.height(), 3});
   
-  std::swap(hHSV, result);
-  return hHSV;
+  return hsv;
 }
 
-void HalideImageProc::hsvToRgb() {
+Halide::Func hsvToRgbFunc(Halide::Func hsv) {
   Halide::Func rgb;
   Halide::Var x, y, c;
 
-  Halide::Expr H = hHSV(x, y, 0);
-  Halide::Expr S = hHSV(x, y, 1);
-  Halide::Expr V = hHSV(x, y, 2);
+  Halide::Expr H = hsv(x, y, 0);
+  Halide::Expr S = hsv(x, y, 1);
+  Halide::Expr V = hsv(x, y, 2);
 
   Halide::Expr i = H / 60.0f;
   i = Halide::cast<int>(i);
@@ -138,17 +83,10 @@ void HalideImageProc::hsvToRgb() {
   
   rgb(x, y, c) = Halide::select(c == 0, r,
                                 c == 1, g, b);
-  
-  rgb.bound(c, 0, 3)
-    .reorder(c, x, y)
-    .unroll(c, 3);
-
-  Halide::Buffer<uint8_t> result = rgb.realize({hHSV.width(), hHSV.height(), 3});
-  std::swap(hImg, result);
-
+  return rgb;
 }
 
-Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
+Halide::Func edgeDetect(Halide::Func hsv, double eth, int width, int height) {
   Halide::Func edge;
   Halide::Var x, y, c;
 
@@ -159,9 +97,9 @@ Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
 
   // clamp
   Halide::Func clamped;
-  Halide::Expr clamped_x = Halide::clamp(x, 0, hHSV.width() - 1);
-  Halide::Expr clamped_y = Halide::clamp(y, 0, hHSV.height() - 1);
-  clamped(x, y, c) = hHSV(clamped_x, clamped_y, c);
+  Halide::Expr clamped_x = Halide::clamp(x, 0, width - 1);
+  Halide::Expr clamped_y = Halide::clamp(y, 0, height - 1);
+  clamped(x, y, c) = hsv(clamped_x, clamped_y, c);
 
   Halide::Expr one = 1;
   one = Halide::cast<uint8_t>(one);
@@ -182,12 +120,10 @@ Halide::Buffer<uint8_t> HalideImageProc::edgeDetect(double eth) {
   edge(x, y) = Halide::select(Halide::abs(local - west) >= eth_float || 
                 Halide::abs(local - north) >= eth_float, one, zero);
 
-  
-  Halide::Buffer<uint8_t> result = edge.realize({hHSV.width(), hHSV.height(), 1});
-  return result;
+  return edge;
 }
 
-Halide::Buffer<uint8_t> HalideImageProc::lowPassFilter(Halide::Buffer<uint8_t> g, int lpf)  {
+Halide::Func lowPassFilter(Halide::Func edge, int lpf, int width, int height) {
   Halide::Func lowPass;
   Halide::Var x, y, c;
 
@@ -197,10 +133,17 @@ Halide::Buffer<uint8_t> HalideImageProc::lowPassFilter(Halide::Buffer<uint8_t> g
   zero = Halide::cast<uint8_t>(zero);
 
   Halide::Func clamped;
-  Halide::Expr clamped_x = Halide::clamp(x, 0, g.width() - 1);
-  Halide::Expr clamped_y = Halide::clamp(y, 0, g.height() - 1);
-  clamped(x, y) = g(clamped_x, clamped_y);
-  clamped = Halide::BoundaryConditions::constant_exterior(g, zero);
+  Halide::Expr clamped_x = Halide::clamp(x, 0, width - 1);
+  Halide::Expr clamped_y = Halide::clamp(y, 0, height - 1);
+  clamped(x, y) = edge(clamped_x, clamped_y);
+  
+  // set up the range, not sure whether it's OK
+  Halide::Range x_range(0, width);
+  Halide::Range y_range(0, height);
+  Halide::Region region;
+  region.push_back(x_range);
+  region.push_back(y_range);
+  clamped = Halide::BoundaryConditions::constant_exterior(edge, zero, region);
 
   Halide::Expr p0 = clamped(x - 1, y - 1);
   Halide::Expr p1 = clamped(x, y - 1);
@@ -211,7 +154,7 @@ Halide::Buffer<uint8_t> HalideImageProc::lowPassFilter(Halide::Buffer<uint8_t> g
   Halide::Expr p6 = clamped(x - 1, y + 1);
   Halide::Expr p7 = clamped(x, y + 1);
   Halide::Expr p8 = clamped(x + 1, y + 1);
-  
+
   Halide::Expr count = 0;
   count = Halide::cast<uint8_t>(count);
 
@@ -227,36 +170,32 @@ Halide::Buffer<uint8_t> HalideImageProc::lowPassFilter(Halide::Buffer<uint8_t> g
   Halide::Expr lpf_expr = lpf;
   lpf_expr = Halide::cast<uint8_t>(lpf_expr);
   lowPass(x, y) = Halide::select(p4 == one && count >= lpf_expr, one, zero);
-  
-  Halide::Buffer<uint8_t> result = lowPass.realize({g.width(), g.height(), 1});
-  return result;
+  return lowPass;
 }
 
-Halide::Buffer<float> HalideImageProc::additiveMaginitude() {
+Halide::Func additiveMaginitude(Halide::Func hsv, int width, int height) {
   Halide::Func max, min, mid, sum_ch, avg, delta;
   Halide:: Var x, y, c;
 
-  Halide::Expr v = hHSV(x, y, 2);
+  Halide::Expr v = hsv(x, y, 2);
   Halide::Expr two = (float) 2;
   two = Halide::cast<float> (two);
   Halide::Expr eight = (float) 8;
   eight = Halide::cast<float> (eight);
   
   // reduction
-  Halide::RDom whole(0, hHSV.width(), 0, hHSV.height());
-  max(x, y) = Halide::maximum(hHSV(x + whole.x, y + whole.y, 2));
-  min(x, y) = Halide::minimum(hHSV(x + whole.x, y + whole.y, 2));
+  Halide::RDom whole(0, width, 0, height);
+  max(x, y) = Halide::maximum(hsv(x + whole.x, y + whole.y, 2));
+  min(x, y) = Halide::minimum(hsv(x + whole.x, y + whole.y, 2));
   mid(x, y) = ( max(x, y) + min(x, y)) / two;
-  sum_ch(x, y) = Halide::sum(hHSV(x + whole.x, y + whole.y, 2));
-  avg(x, y) = sum_ch(x, y) / ((float)hHSV.width() * (float) hHSV.height());
+  sum_ch(x, y) = Halide::sum(hsv(x + whole.x, y + whole.y, 2));
+  avg(x, y) = sum_ch(x, y) / ((float)width * (float)height);
   delta(x, y) = (max(x, y) / eight) * (avg(x, y) / mid(x, y));
 
-  Halide::Buffer<float> delta_result = delta.realize({1, 1});
-
-  return delta_result;
+  return delta;
 }
 
-Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, double s, Halide::Buffer<float> delta) {
+Halide::Func edgeSharpen(Halide::Func hsv, Halide::Func lowPass, double s, Halide::Func delta, int width, int height) {
   Halide::Func sharpen;
   Halide::Var x, y, c;
 
@@ -274,21 +213,25 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, d
   zero_float = Halide::cast<uint8_t>(zero_float);
   Halide::Expr s_float = (float)s;
   s_float = Halide::cast<float>(s_float);
-  float delta_value = delta.get()->begin()[0];
-  Halide::Expr delta_float = delta_value;
+  Halide::Expr delta_float = delta(0, 0);  // ????
   delta_float = Halide::cast<float>(delta_float);
 
   Halide::Func clamped_hsv;
-  Halide::Expr clamped_x = Halide::clamp(x, 0, hHSV.width() - 1);
-  Halide::Expr clamped_y = Halide::clamp(y, 0, hHSV.height() - 1);
-  clamped_hsv(x, y, c) = hHSV(clamped_x, clamped_y, c);
+  Halide::Expr clamped_x = Halide::clamp(x, 0, width - 1);
+  Halide::Expr clamped_y = Halide::clamp(y, 0, height - 1);
+  clamped_hsv(x, y, c) = hsv(clamped_x, clamped_y, c);
   
   Halide::Func clamped_g;
-  Halide::Expr clamped_xg = Halide::clamp(x, 0, g.width() - 1);
-  Halide::Expr clamped_yg = Halide::clamp(y, 0, g.height() - 1);
-  clamped_g(x, y) = g(clamped_xg, clamped_yg);
-  clamped_g = Halide::BoundaryConditions::constant_exterior(g, two);  // mark as not exist
-
+  Halide::Expr clamped_xg = Halide::clamp(x, 0, width - 1);
+  Halide::Expr clamped_yg = Halide::clamp(y, 0, height - 1);
+  clamped_g(x, y) = lowPass(clamped_xg, clamped_yg);
+  // set up the range, not sure whether it's OK
+  Halide::Range x_range(0, width);
+  Halide::Range y_range(0, height);
+  Halide::Region region;
+  region.push_back(x_range);
+  region.push_back(y_range);
+  clamped_g = Halide::BoundaryConditions::constant_exterior(lowPass, two, region);  // mark as not exist
 
   // pixel
   Halide::Expr p0 = clamped_hsv(x - 1, y - 1, 2);
@@ -337,7 +280,9 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, d
   sum = Halide::select(g8 != two, sum + p8, sum);
 
   Halide::Expr mean = sum / count;
-  Halide::Expr oldV = hHSV(x, y, 2);
+  Halide::Expr oldV = hsv(x, y, 2);
+
+  oldV = Halide::print_when(x == 179 && y == 0, oldV, "oldV when x=", x, ", y=", y);
 
   Halide::Expr epo = (float)1e-4;
   epo = Halide::cast<float> (epo);
@@ -346,58 +291,22 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, d
                                       mean / oldV);
 
 
-  // Halide::Expr newV = Halide::max(Halide::min(oldV + s_float * delta_float * factor, one_float), zero_float);   
-
   // Alternative
   Halide::Expr newV = Halide::select( g4 == zero, oldV,
                                       oldV + s_float * delta_float * factor);
   newV = Halide::max(Halide::min(newV, one_float), zero_float);
 
-  Halide::Expr oldH = hHSV(x, y, 0);
-  Halide::Expr oldS = hHSV(x, y, 1);
+  newV = Halide::print_when(x == 179 && y == 0, newV, "newV when x=", x, ", y=", y);
+
+  Halide::Expr oldH = hsv(x, y, 0);
+  Halide::Expr oldS = hsv(x, y, 1);
   
   sharpen(x, y, c) = Halide::select(c == 0, oldH, 
                                     c == 1, oldS, newV);
 
-  Halide::Buffer<float> result = sharpen.realize({hHSV.width(), hHSV.height(), 3});
-  hHSV = result;
-  return result;
+  return sharpen;
 }
 
-Halide::Func HalideImageProc::LoadImageFunc(std::string filename) {
-  hImg = Halide::Tools::load_image(filename);
-  Halide::Func output;
-  Halide::Var x, y, c;
-  output(x, y, c) = hImg(x, y, c);
-  return output;
-}
-
-Halide::Func HalideImageProc::rgbToHsvFunc(Halide::Func input) {
-  Halide::Func max_ch, min_ch, diff, hsv;
-  Halide::Var x, y, c;
 
 
-  Halide::Expr R = input(x, y, 0) / 255.0f;
-  Halide::Expr G = input(x, y, 1) / 255.0f;
-  Halide::Expr B = input(x, y, 2) / 255.0f;
 
-  max_ch(x, y) = Halide::max(R, G, B);
-  max_ch.trace_stores();
-  min_ch(x, y) = Halide::min(R, G, B);
-  diff(x ,y) = max_ch(x, y) - min_ch(x, y);
-
-  Halide::Expr V = max_ch(x, y);
-  Halide::Expr C = diff(x, y);
-
-  Halide::Expr H = Halide::select(C == 0, 0, 
-                                  R == V && G >= B, 60 * (0 + (G - B) / C),
-                                  R == V && G < B, 60 * (6 + (G - B) / C),
-                                  G == V, 60 * (2 + (B - R) / C), 60 * (4 + (R - G) / C));
-
-  Halide::Expr S = Halide::select(V == 0, 0, C / V);
-
-  hsv(x, y, c) = Halide::select(c == 0, H,
-                        c == 1, S, V);
-  
-  return hsv;
-}

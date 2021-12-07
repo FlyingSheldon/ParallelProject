@@ -22,6 +22,9 @@ public:
   virtual Halide::Buffer<uint8_t> lowPassFilter(Halide::Buffer<uint8_t> g, int lpf);
   virtual Halide::Buffer<float> additiveMaginitude();
   virtual Halide::Buffer<float>  edgeSharpen(Halide::Buffer<uint8_t> g, double s, Halide::Buffer<float> delta);
+  
+  virtual Halide::Func LoadImageFunc(std::string filename);
+  virtual Halide::Func rgbToHsvFunc(Halide::Func input);
 
 #ifdef PP_USE_HALIDE
 private:

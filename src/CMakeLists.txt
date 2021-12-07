@@ -24,7 +24,7 @@ else()
 endif()
 
 if (pp_USE_HALIDE)
-    list(APPEND pp_IMPL_SRC ${pp_SRC_DIR}/proc/halide_proc.cpp)
+    list(APPEND pp_IMPL_SRC ${pp_SRC_DIR}/proc/halide_proc.cpp ${pp_SRC_DIR}/proc/halide_func.cpp)
     list(APPEND pp_DEF PP_USE_HALIDE)
 else()
     list(APPEND pp_IMPL_SRC ${pp_SRC_DIR}/proc/empty_impl/no_halide_proc.cpp)

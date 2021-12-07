@@ -317,6 +317,7 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, d
   count = Halide::select(g1 != two, count + one, count);
   count = Halide::select(g2 != two, count + one, count);
   count = Halide::select(g3 != two, count + one, count);
+  count = Halide::select(g4 != two, count + one, count);
   count = Halide::select(g5 != two, count + one, count);
   count = Halide::select(g6 != two, count + one, count);
   count = Halide::select(g7 != two, count + one, count);
@@ -328,6 +329,7 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, d
   sum = Halide::select(g1 != two, sum + p1, sum);
   sum = Halide::select(g2 != two, sum + p2, sum);
   sum = Halide::select(g3 != two, sum + p3, sum);
+  sum = Halide::select(g4 != two, sum + p4, sum);
   sum = Halide::select(g5 != two, sum + p5, sum);
   sum = Halide::select(g6 != two, sum + p6, sum);
   sum = Halide::select(g7 != two, sum + p7, sum);
@@ -336,8 +338,12 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, d
   Halide::Expr mean = sum / count;
   Halide::Expr oldV = hHSV(x, y, 2);
 
-  Halide::Expr factor = Halide::select(oldV < mean, minus_one * oldV / mean,
-                                     mean / oldV);
+  Halide::Expr epo = (float)1e-4;
+  epo = Halide::cast<float> (epo);
+  Halide::Expr factor = Halide::select(Halide::abs(oldV - mean) < epo, 1,
+                                      oldV < mean, minus_one * oldV / mean,
+                                      mean / oldV);
+
 
   // Halide::Expr newV = Halide::max(Halide::min(oldV + s_float * delta_float * factor, one_float), zero_float);   
 

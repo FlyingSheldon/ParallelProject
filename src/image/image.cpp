@@ -325,6 +325,10 @@ void Image::RGB2HSV(size_t x, size_t y) {
 
   float v = cmax;
 
+  if (x == 5568 && y == 4) {
+    printf("rgbToHsv v=%f", v);
+  }
+
   float *hsvx = GetHSVData(x, y);
   hsvx[0] = h;
   hsvx[1] = s;

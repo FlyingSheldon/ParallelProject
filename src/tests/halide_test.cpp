@@ -276,7 +276,7 @@ TEST(HalideTest, AllTest) {
   Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
   Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
   Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
-  Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1, scale, delta1);
+  Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1_filter, scale, delta1);
   halideProc.hsvToRgb();
   Image &img = *halideProc.GetImage();
 
@@ -295,7 +295,7 @@ TEST(HalideTest, AllTest) {
   ASSERT_EQ(img.GetWidth(), img2.GetWidth());
   ASSERT_EQ(img.GetHeight(), img2.GetHeight());
 
-  float near = 15.0;
+  float near = 1.0;
 
   for (int y = 0; y < img.GetHeight(); y++) {
     for (int x = 0; x < img.GetWidth(); x++) {

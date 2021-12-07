@@ -185,12 +185,21 @@ void edgeSharpen(Image &image, std::vector<bool> &g, float s, float delta) {
       float localMean = computelocalMean(image, x, y);
       const float *value = image.GetValueData(x, y);
 
-      float factor =
-          *value < localMean ? (-*value) / localMean : localMean / *value;
+      float factor;
+      if (abs(*value - localMean) < 1e-4) {
+        factor = 1;
+      } else {
+        factor = *value < localMean ? (-*value) / localMean : localMean / *value;
+      }
+          // abs(*value - localMean) *value < localMean ? (-*value) / localMean : localMean / *value;
       float value_change = s * delta * factor;
 
       hsvCopy[y * image.GetWidth() + x] =
           std::max(std::min(*value + value_change, 1.0f), 0.0f);
+
+      if (x == 5568 && y == 4) {
+        printf("old value=%f, value change=%f, new value=%f, \n", *value, value_change, hsvCopy[y * image.GetWidth() + x] );
+      }
     }
   }
   for (int y = 0; y < image.GetHeight(); y++) {

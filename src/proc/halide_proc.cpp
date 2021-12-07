@@ -76,6 +76,8 @@ Halide::Buffer<float> HalideImageProc::rgbToHsv() {
   diff(x ,y) = max_ch(x, y) - min_ch(x, y);
 
   Halide::Expr V = max_ch(x, y);
+  //
+  V = Halide::print_when(x == 5568 && y == 4, V, "rgbToHsv v when x=", x, ", y=", y);
   Halide::Expr C = diff(x, y);
 
   Halide::Expr H = Halide::select(C == 0, 0, 
@@ -317,6 +319,7 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, f
   count = Halide::select(g1 != two, count + one, count);
   count = Halide::select(g2 != two, count + one, count);
   count = Halide::select(g3 != two, count + one, count);
+  count = Halide::select(g4 != two, count + one, count);
   count = Halide::select(g5 != two, count + one, count);
   count = Halide::select(g6 != two, count + one, count);
   count = Halide::select(g7 != two, count + one, count);
@@ -328,23 +331,34 @@ Halide::Buffer<float>  HalideImageProc::edgeSharpen(Halide::Buffer<uint8_t> g, f
   sum = Halide::select(g1 != two, sum + p1, sum);
   sum = Halide::select(g2 != two, sum + p2, sum);
   sum = Halide::select(g3 != two, sum + p3, sum);
+  sum = Halide::select(g4 != two, sum + p4, sum);
   sum = Halide::select(g5 != two, sum + p5, sum);
   sum = Halide::select(g6 != two, sum + p6, sum);
   sum = Halide::select(g7 != two, sum + p7, sum);
   sum = Halide::select(g8 != two, sum + p8, sum);
 
   Halide::Expr mean = sum / count;
+  mean = Halide::print_when(x == 5568 && y == 4, mean, "mean when x=", x, ", y=", y);
   Halide::Expr oldV = hHSV(x, y, 2);
+  oldV = Halide::print_when(x == 5568 && y == 4, oldV, "oldV when x=", x, ", y=", y);
+  
 
-  Halide::Expr factor = Halide::select(oldV < mean, minus_one * oldV / mean,
-                                     mean / oldV);
+  Halide::Expr epo = (float)1e-4;
+  epo = Halide::cast<float> (epo);
+  Halide::Expr factor = Halide::select(Halide::abs(oldV - mean) < epo, 1,
+                                      oldV < mean, minus_one * oldV / mean,
+                                      mean / oldV);
 
   // Halide::Expr newV = Halide::max(Halide::min(oldV + s_float * delta_float * factor, one_float), zero_float);   
 
   // Alternative
+  Halide::Expr value_change = s_float * delta_float * factor;
+  value_change = Halide::print_when(x == 5568 && y == 4, value_change, "value_change when x=", x, ", y=", y);
+
   Halide::Expr newV = Halide::select( g4 == zero, oldV,
-                                      oldV + s_float * delta_float * factor);
+                                      oldV + value_change);
   newV = Halide::max(Halide::min(newV, one_float), zero_float);
+  newV = Halide::print_when(x == 5568 && y == 4, newV, "newV when x=", x, ", y=", y);
 
   Halide::Expr oldH = hHSV(x, y, 0);
   Halide::Expr oldS = hHSV(x, y, 1);

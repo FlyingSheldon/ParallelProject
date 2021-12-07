@@ -10,6 +10,7 @@ struct Conf {
   double sharpness, brightness;
   Impl impl;
   std::optional<std::string> confError;
+  bool showTime;
 
   Conf(int argc, char **argv);
 };

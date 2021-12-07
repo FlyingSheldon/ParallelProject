@@ -31,4 +31,6 @@ Conf::Conf(int argc, char **argv) {
   } else {
     impl = Impl::LINEAR;
   }
+
+  showTime = FLAGS_time;
 }

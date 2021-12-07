@@ -4,6 +4,7 @@
 #include "proc/proc.h"
 #include "util/conf.h"
 #include "util/flags.h"
+#include "util/timer.h"
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -43,12 +44,25 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  auto brightStart = Timer::Now();
   if (conf.brightness != 1.0) {
     proc->Brighten(conf.brightness);
   }
+  auto brightEnd = Timer::Now();
 
+  auto sharpStart = Timer::Now();
   if (conf.sharpness != 0.0) {
     proc->Sharpen(conf.sharpness);
+  }
+  auto sharpEnd = Timer::Now();
+
+  if (conf.showTime) {
+    std::cout << "Brigten: "
+              << Timer::DurationInMillisecond(brightStart, brightEnd) << " ms"
+              << std::endl;
+    std::cout << "Sharpen: "
+              << Timer::DurationInMillisecond(sharpStart, sharpEnd) << " ms"
+              << std::endl;
   }
 
   imageResult = proc->SaveImage(conf.output);

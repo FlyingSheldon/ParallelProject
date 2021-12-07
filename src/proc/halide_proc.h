@@ -16,17 +16,19 @@ public:
   virtual ImageIOResult SaveImage(std::string filename) override;
   virtual Image *GetImage() override;
 
+#ifdef PP_USE_HALIDE
   virtual Halide::Buffer<float> rgbToHsv();
   virtual void hsvToRgb();
   virtual Halide::Buffer<uint8_t> edgeDetect(double eth);
-  virtual Halide::Buffer<uint8_t> lowPassFilter(Halide::Buffer<uint8_t> g, int lpf);
+  virtual Halide::Buffer<uint8_t> lowPassFilter(Halide::Buffer<uint8_t> g,
+                                                int lpf);
   virtual Halide::Buffer<float> additiveMaginitude();
-  virtual Halide::Buffer<float>  edgeSharpen(Halide::Buffer<uint8_t> g, double s, Halide::Buffer<float> delta);
-  
+  virtual Halide::Buffer<float> edgeSharpen(Halide::Buffer<uint8_t> g, double s,
+                                            Halide::Buffer<float> delta);
+
   virtual Halide::Func LoadImageFunc(std::string filename);
   virtual Halide::Func rgbToHsvFunc(Halide::Func input);
 
-#ifdef PP_USE_HALIDE
 private:
   Halide::Buffer<uint8_t> hImg;
   Halide::Buffer<float> hHSV;

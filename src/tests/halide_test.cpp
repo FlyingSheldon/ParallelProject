@@ -51,9 +51,8 @@
 //   HalideImageProc halideProc;
 //   LinearImageProc linearProc;
 
-
 //   halideProc.LoadImage("test.jpg");
-//   Halide::Buffer<float> hsv = halideProc.rgbToHsv(); 
+//   Halide::Buffer<float> hsv = halideProc.rgbToHsv();
 
 //   auto res2 = linearProc.LoadImage("test.jpg");
 //   Image &img2 = *linearProc.GetImage();
@@ -75,8 +74,9 @@
 //       ASSERT_NEAR((float)hsvp2[1], ptr[s], near)
 //           << "Pixel " << x << " " << y << " S not equal";
 //       ASSERT_NEAR((float)hsvp2[2], ptr[v], near)
-//           << "Pixel " << x << " " << y << " V not equal" 
-//           << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" << (int)p2[2];
+//           << "Pixel " << x << " " << y << " V not equal"
+//           << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" <<
+//           (int)p2[2];
 
 //       h++;
 //       s++;
@@ -93,7 +93,7 @@
 //   LinearImageProc linearProc;
 
 //   halideProc.LoadImage("test.jpg");
-//   halideProc.rgbToHsv(); 
+//   halideProc.rgbToHsv();
 //   halideProc.hsvToRgb();
 //   Image &img = *halideProc.GetImage();
 
@@ -128,7 +128,7 @@
 
 //   double eth = 0.07;
 //   halideProc.LoadImage("test.jpg");
-//   halideProc.rgbToHsv(); 
+//   halideProc.rgbToHsv();
 //   Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
 
 //   auto res2 = linearProc.LoadImage("test.jpg");
@@ -137,7 +137,7 @@
 //   std::vector<bool> g2 = edgeDetect(img2, eth);
 
 //   const uint8_t *ptr = g1.get()->begin();
-//   size_t i = 0; 
+//   size_t i = 0;
 //   std::cout << "g1 dim " << g1.dimensions() << std::endl;
 
 //   for (int y = 0; y < g1.height(); y++) {
@@ -161,7 +161,7 @@
 //   double eth = 0.07;
 //   int lpf = 2;
 //   halideProc.LoadImage("test.jpg");
-//   halideProc.rgbToHsv(); 
+//   halideProc.rgbToHsv();
 //   Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
 //   Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
 
@@ -172,7 +172,7 @@
 //   lowPassFilter(img2, g2, lpf);
 
 //   const uint8_t *ptr = g1_filter.get()->begin();
-//   size_t i = 0; 
+//   size_t i = 0;
 
 //   for (int y = 0; y < g1_filter.height(); y++) {
 //     for (int x = 0; x < g1_filter.width(); x++) {
@@ -195,7 +195,7 @@
 //   double eth = 0.07;
 //   int lpf = 2;
 //   halideProc.LoadImage("test.jpg");
-//   halideProc.rgbToHsv(); 
+//   halideProc.rgbToHsv();
 //   Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
 //   Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
 //   Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
@@ -222,11 +222,12 @@
 //   int lpf = 2;
 //   double scale = 0.5;
 //   halideProc.LoadImage("test.jpg");
-//   halideProc.rgbToHsv(); 
+//   halideProc.rgbToHsv();
 //   Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
 //   Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
 //   Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
-//   Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1_filter, scale, delta1);
+//   Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1_filter, scale,
+//   delta1);
 
 //   auto res2 = linearProc.LoadImage("test.jpg");
 //   Image &img2 = *linearProc.GetImage();
@@ -252,8 +253,9 @@
 //       ASSERT_NEAR((float)hsvp2[1], ptr[s], near)
 //           << "Pixel " << x << " " << y << " S not equal";
 //       ASSERT_NEAR((float)hsvp2[2], ptr[v], near)
-//           << "Pixel " << x << " " << y << " V not equal" 
-//           << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" << (int)p2[2];
+//           << "Pixel " << x << " " << y << " V not equal"
+//           << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" <<
+//           (int)p2[2];
 
 //       h++;
 //       s++;
@@ -273,13 +275,12 @@
 //   int lpf = 2;
 //   double scale = 0.5;
 //   halideProc.LoadImage("test.jpg");
-//   halideProc.rgbToHsv(); 
+//   halideProc.rgbToHsv();
 //   Halide::Buffer<uint8_t> g1 = halideProc.edgeDetect(eth);
 //   Halide::Buffer<uint8_t> g1_filter = halideProc.lowPassFilter(g1, lpf);
 //   Halide::Buffer<float> delta1 = halideProc.additiveMaginitude();
-//   Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1_filter, scale, delta1);
-//   halideProc.hsvToRgb();
-//   Image &img = *halideProc.GetImage();
+//   Halide::Buffer<float> hsv = halideProc.edgeSharpen(g1_filter, scale,
+//   delta1); halideProc.hsvToRgb(); Image &img = *halideProc.GetImage();
 
 //   auto res2 = linearProc.LoadImage("test.jpg");
 //   Image &img2 = *linearProc.GetImage();
@@ -316,18 +317,13 @@ TEST(HalideTest, FuncTest) {
   int lpf = 2;
   double scale = 0.5;
 
-  Halide::Buffer<uint8_t> hImg = LoadImage("test.jpg");  // get width and height
-  Halide::Func input = LoadImageFunc(hImg);
-  Halide::Func hsv = rgbToHsvFunc(input);
-  Halide::Func edge = edgeDetect(hsv, eth, hImg.width(), hImg.height());
-  Halide::Func lowPass = lowPassFilter(edge, lpf, hImg.width(), hImg.height());
-  Halide::Func delta = additiveMaginitude(hsv, hImg.width(), hImg.height());  // just return a float ?
-  Halide::Func sharpen = edgeSharpen(hsv, lowPass, scale, delta, hImg.width(), hImg.height());
-  Halide::Func rgb = hsvToRgbFunc(sharpen);
-  Halide::Buffer<uint8_t> result = rgb.realize({hImg.width(), hImg.height(), 3});
+  Halide::Buffer<uint8_t> hImg = LoadImage("test.jpg"); // get width and height
+  SharpenPipeline p(hImg, scale);
+
+  Halide::Buffer<uint8_t> result =
+      p.sharpen.realize({hImg.width(), hImg.height(), 3});
   std::cout << "Halide done!" << std::endl;
 
-  
   auto res2 = linearProc.LoadImage("test.jpg");
   Image &img2 = *linearProc.GetImage();
   rgbToHsv(img2);
@@ -352,7 +348,7 @@ TEST(HalideTest, FuncTest) {
       ASSERT_NEAR((int)p2[1], ptr[s], near)
           << "Pixel " << x << " " << y << " G not equal";
       ASSERT_NEAR((int)p2[2], ptr[v], near)
-          << "Pixel " << x << " " << y << " B not equal" 
+          << "Pixel " << x << " " << y << " B not equal"
           << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" << (int)p2[2];
 
       h++;
@@ -360,8 +356,6 @@ TEST(HalideTest, FuncTest) {
       v++;
     }
   }
-
-  
 }
 
 #else

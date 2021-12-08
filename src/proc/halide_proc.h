@@ -1,7 +1,9 @@
 #pragma once
 #include "proc/proc.h"
+#include <memory>
 
 #ifdef PP_USE_HALIDE
+#include "proc/halide_func.h"
 #include <Halide.h>
 #endif
 
@@ -32,6 +34,7 @@ public:
 private:
   Halide::Buffer<uint8_t> hImg;
   Halide::Buffer<float> hHSV;
+  std::unique_ptr<SharpenPipeline> p;
   Image img;
 #endif
 };

@@ -13,10 +13,11 @@ DECLARE_string(o);
 DECLARE_double(sharpness);
 DECLARE_string(impl);
 DECLARE_bool(time);
+DECLARE_int32(schedule);
 
 class Flags {
   const std::unordered_set<std::string> helpFlags{
-      "help", "brightness", "o", "sharpness", "impl", "time"};
+      "help", "brightness", "o", "sharpness", "impl", "time", "schedule"};
 
   void showHelpMessage(const char *argv0) {
     std::cout << argv0 << ": " << gflags::ProgramUsage() << std::endl;

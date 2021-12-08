@@ -1,5 +1,6 @@
 #include "proc/halide_proc.h"
 #include "proc/halide_func.h"
+#include "util/flags.h"
 #include <halide_image_io.h>
 #include <iostream>
 
@@ -30,10 +31,11 @@ void HalideImageProc::Brighten(double value) {
 
 void HalideImageProc::Sharpen(double value) {
   SharpenPipeline p(hImg, value);
-  p.ScheduleForCpu();
+  p.ScheduleForCpu(FLAGS_schedule);
   Halide::Buffer<uint8_t> res =
       p.sharpen.realize({hImg.width(), hImg.height(), 3});
   res.copy_to_host();
+  std::swap(res, hImg);
 }
 
 bool HalideImageProc::IsSupported() const { return true; }

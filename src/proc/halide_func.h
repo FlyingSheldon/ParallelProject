@@ -1,44 +1,83 @@
 #pragma once
 #include <Halide.h>
+#include <vector>
 
 Halide::Buffer<uint8_t> LoadImage(std::string filename);
 
 class SharpenPipeline {
 private:
-  Halide::Func hsvFunc{"hsv"}, edgeFunc{"edge"}, lowPassFunc{"lowPass"},
-      deltaFunc{"delta"}, sharpenHsvFunc{"sharpenHsv"};
+  Halide::Func hsv{"hsv"}, edge{"edge"}, lowPass{"lowPass"}, delta{"delta"},
+      sharpenHsv{"sharpenHsv"}, input{"input"}, reductionInter{"intermediate"},
+      changed{"changed"};
+  Halide::Var x{"x"}, y{"y"}, c{"c"}, xo{"xo"}, yo{"yo"}, xi{"xi"}, yi{"yi"};
 
   static constexpr int dx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
   static constexpr int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
+  void Schedule(int i) {
+    switch (i) {
+    case 0: {
+      hsv.compute_root().parallel(y);
+      delta.compute_root();
+      reductionInter.compute_root().update().parallel(y);
+      edge.compute_at(lowPass, y);
+      lowPass.compute_root().parallel(y);
+      sharpen.parallel(y);
+      break;
+    }
+    case 1: {
+      hsv.compute_root().parallel(y);
+      delta.compute_root();
+      reductionInter.compute_root().update().parallel(y);
+      edge.compute_at(lowPass, xo);
+      lowPass.compute_root().tile(x, y, xo, yo, xi, yi, 128, 128).parallel(yo);
+      sharpen.parallel(y);
+      break;
+    }
+    case 2: {
+      hsv.compute_root().parallel(y);
+      delta.compute_root();
+      reductionInter.compute_root().update().parallel(y);
+      edge.store_at(lowPass, yo).compute_at(lowPass, yi);
+      lowPass.compute_root().split(y, yo, yi, 16).parallel(yo);
+      sharpen.parallel(y);
+      break;
+    }
+    default: {
+      hsv.compute_root().parallel(y);
+      delta.compute_root();
+      reductionInter.compute_root().update().parallel(y);
+      edge.compute_root().parallel(y);
+      lowPass.compute_root().parallel(y);
+      sharpen.parallel(y);
+      break;
+    }
+    }
+  }
+
 public:
   Halide::Func sharpen{"sharpen"};
-  Halide::Var x{"x"}, y{"y"}, c{"c"};
   int width, height;
 
   SharpenPipeline(Halide::Buffer<uint8_t> &img, double s)
       : width(img.width()), height(img.height()) {
-    Halide::Func input;
     input(x, y, c) = img(x, y, c);
 
     double eth = 0.07;
     int lpf = 2;
 
-    hsvFunc = this->rgbToHsvFunc(input);
-    edgeFunc = this->edgeDetect(hsvFunc, eth);
-    lowPassFunc = this->lowPassFilter(edgeFunc, lpf);
-    deltaFunc = this->additiveMaginitude(hsvFunc);
-    sharpenHsvFunc = this->edgeSharpen(hsvFunc, lowPassFunc, s, deltaFunc);
-    sharpen = this->hsvToRgbFunc(sharpenHsvFunc);
+    rgbToHsvFunc();
+    additiveMaginitude();
+    edgeDetect(eth);
+    lowPassFilter(lpf);
+    edgeSharpen(s);
+    hsvToRgbFunc();
   }
 
-  void ScheduleForCpu() {
-    hsvFunc.compute_root();
-    deltaFunc.compute_root();
-  }
+  void ScheduleForCpu(int i = 0) { Schedule(i); }
 
-  Halide::Func rgbToHsvFunc(Halide::Func input) {
-    Halide::Func max_ch, min_ch, diff, hsv("hsv"), hf("hf"), sf("sf"), vf("vf");
+  Halide::Func rgbToHsvFunc() {
+    Halide::Func max_ch, min_ch, diff, hf("hf"), sf("sf"), vf("vf");
 
     Halide::Expr R = input(x, y, 0) / 255.0f;
     Halide::Expr G = input(x, y, 1) / 255.0f;
@@ -71,9 +110,7 @@ public:
     return hsv;
   }
 
-  Halide::Func edgeDetect(Halide::Func hsv, double eth) {
-    Halide::Func edge;
-
+  Halide::Func edgeDetect(double eth) {
     Halide::Func clamped;
     Halide::Expr clamped_x = Halide::clamp(x, 0, width - 1);
     Halide::Expr clamped_y = Halide::clamp(y, 0, height - 1);
@@ -97,9 +134,7 @@ public:
     return edge;
   }
 
-  Halide::Func lowPassFilter(Halide::Func edge, int lpf) {
-    Halide::Func lowPass;
-
+  Halide::Func lowPassFilter(int lpf) {
     Halide::Expr one = 1;
     one = Halide::cast<uint8_t>(one);
     Halide::Expr zero = 0;
@@ -133,9 +168,10 @@ public:
     return lowPass;
   }
 
-  Halide::Func additiveMaginitude(Halide::Func hsv) {
-    Halide::Func max("max"), min("min"), mid("mid"), sum_ch("sum"), avg("avg"),
-        delta("del");
+  Halide::Func additiveMaginitude() {
+    Halide::Func mms("mms");
+    Halide::Var z;
+    Halide::Expr mid, avg;
 
     Halide::Expr v = hsv(x, y, 2);
     Halide::Expr two = (float)2;
@@ -143,28 +179,33 @@ public:
     Halide::Expr eight = (float)8;
     eight = Halide::cast<float>(eight);
 
-    // reduction
-    Halide::RDom whole(0, width, 0, height);
-    // max(0, 0) = Halide::maximum(hsv(whole.x, whole.y, 2));
-    max(x, y) = Halide::maximum(hsv(x + whole.x, y + whole.y, 2));
-    // min(0, 0) = Halide::minimum(hsv(whole.x, whole.y, 2));
-    min(x, y) = Halide::minimum(hsv(x + whole.x, y + whole.y, 2));
-    // mid(0, 0) = (max(0, 0) + min(0, 0)) / OUT_BOUND;
-    mid(x, y) = (max(x, y) + min(x, y)) / two;
-    // sum_ch(0, 0) = Halide::sum(hsv(whole.x, whole.y, 2));
-    sum_ch(x, y) = Halide::sum(hsv(x + whole.x, y + whole.y, 2));
-    // avg(0, 0) = sum_ch(0, 0) / ((float)width * (float)height);
-    avg(x, y) = sum_ch(x, y) / ((float)width * (float)height);
-    // delta(0, 0) = (max(0, 0) / eight) * (avg(0, 0) / mid(0, 0));
-    delta(x, y) = (max(x, y) / eight) * (avg(x, y) / mid(x, y));
+    // Halide::RDom whole(0, width, 0, height);
+
+    reductionInter(x, y, z) = Halide::select(z == 0, 1.0f, 0.0f);
+    mms(x, y, z) = Halide::select(z == 0, 1.0f, 0.0f);
+
+    Halide::RDom rx(0, width);
+    reductionInter(0, y, z) = Halide::select(
+        z == 0, Halide::min(reductionInter(0, y, z), hsv(rx, y, 2)), z == 1,
+        Halide::max(reductionInter(0, y, z), hsv(rx, y, 2)),
+        reductionInter(0, y, z) + hsv(rx, y, 2));
+
+    Halide::RDom ry(0, height);
+
+    mms(0, 0, z) = Halide::select(
+        z == 0, Halide::min(mms(0, 0, z), reductionInter(0, ry, 2)), z == 1,
+        Halide::max(mms(0, 0, z), reductionInter(0, ry, 2)),
+        mms(0, 0, z) + reductionInter(0, ry, 2));
+
+    mid = (mms(x, y, 1) + mms(x, y, 0)) / two;
+    avg = mms(x, y, 2) / ((float)width * (float)height);
+
+    delta(x, y) = (mms(x, y, 1) / eight) * (avg / mid);
 
     return delta;
   }
 
-  Halide::Func edgeSharpen(Halide::Func hsv, Halide::Func lowPass, double s,
-                           Halide::Func delta) {
-    Halide::Func sharpen;
-
+  Halide::Func edgeSharpen(double s) {
     Halide::Expr one = 1;
     one = Halide::cast<uint8_t>(one);
     Halide::Expr zero = 0;
@@ -228,18 +269,17 @@ public:
     Halide::Expr oldH = hsv(x, y, 0);
     Halide::Expr oldS = hsv(x, y, 1);
 
-    sharpen(x, y, c) = Halide::select(c == 0, oldH, c == 1, oldS, newV);
+    sharpenHsv(x, y, c) = Halide::select(c == 0, oldH, c == 1, oldS, newV);
 
-    return sharpen;
+    return sharpenHsv;
   }
 
-  Halide::Func hsvToRgbFunc(Halide::Func hsv) {
-    Halide::Func rgb;
-    Halide::Var x, y, c;
+  Halide::Func hsvToRgbFunc() {
+    Halide::Func rf("rf"), gf("gf"), bf("bf");
 
-    Halide::Expr H = hsv(x, y, 0);
-    Halide::Expr S = hsv(x, y, 1);
-    Halide::Expr V = hsv(x, y, 2);
+    Halide::Expr H = sharpenHsv(x, y, 0);
+    Halide::Expr S = sharpenHsv(x, y, 1);
+    Halide::Expr V = sharpenHsv(x, y, 2);
 
     Halide::Expr i = H / 60.0f;
     i = Halide::cast<int>(i);
@@ -267,7 +307,19 @@ public:
     b = b * 255.0f;
     b = Halide::cast<uint8_t>(b);
 
-    rgb(x, y, c) = Halide::select(c == 0, r, c == 1, g, b);
-    return rgb;
+    rf(x, y) = r;
+    gf(x, y) = g;
+    bf(x, y) = b;
+
+    sharpen(x, y, c) = Halide::select(c == 0, r, c == 1, g, b);
+
+    // sharpen(x, y, c) =
+    //     Halide::select(lowPass(x, y) == 0, input(x, y, c), changed(x, y, c));
+    sharpen.reorder(c, x, y).bound(c, 0, 3).unroll(c, 3);
+    rf.compute_at(sharpen, x);
+    gf.compute_at(sharpen, x);
+    bf.compute_at(sharpen, x);
+
+    return changed;
   }
 };

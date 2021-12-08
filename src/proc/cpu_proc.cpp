@@ -162,12 +162,14 @@ double computelocalMean(Image &image, size_t x, size_t y) {
   for (int i = 0; i < 8; i++) {
     size_t newX = x + dx[i];
     size_t newY = y + dy[i];
+
     if (newX >= 0 && newX < image.GetWidth() && newY >= 0 &&
         newY < image.GetHeight()) {
       localSum += image.GetValue(newX, newY);
       localCnt++;
     }
   }
+
   double localMean = localSum / (double)localCnt;
   return localMean;
 }

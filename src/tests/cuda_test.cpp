@@ -7,8 +7,8 @@
 #include "proc/cuda_proc.h"
 
 TEST(CudaTest, BrightenTest) {
-  std::cout << "Please check test path: " << std::filesystem::current_path()
-            << std::endl;
+  // std::cout << "Please check test path: " << std::filesystem::current_path()
+  //           << std::endl;
 
   CudaImageProc cudaProc;
   LinearImageProc linearProc;

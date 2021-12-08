@@ -9,3 +9,4 @@ DEFINE_string(impl, "linear",
               "SET image processing implementation(linear, halide, cuda)");
 DEFINE_bool(time, false, "Measure time of each step");
 DEFINE_int32(schedule, 0, "Choose the scheduler");
+DEFINE_bool(gpu, false, "Enable GPU for halide implementation");

@@ -13,7 +13,8 @@ int main(int argc, char **argv) {
 
   Halide::Buffer<uint8_t> hImg = LoadImage("test.jpg"); // get width and height
   SharpenPipeline p(hImg, scale);
-  p.ScheduleForCpu(3);
+  // p.ScheduleForCpu(3);
+  p.ScheduleForGpu();
   Halide::Buffer<uint8_t> result =
       p.sharpen.realize({hImg.width(), hImg.height(), 3});
   p.sharpen.print_loop_nest();

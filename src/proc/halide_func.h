@@ -3,18 +3,24 @@
 #include <vector>
 
 Halide::Buffer<uint8_t> LoadImage(std::string filename);
+Halide::Target findGpuTarget();
 
 class SharpenPipeline {
 private:
   Halide::Func hsv{"hsv"}, edge{"edge"}, lowPass{"lowPass"}, delta{"delta"},
       sharpenHsv{"sharpenHsv"}, input{"input"}, reductionInter{"intermediate"},
-      changed{"changed"};
-  Halide::Var x{"x"}, y{"y"}, c{"c"}, xo{"xo"}, yo{"yo"}, xi{"xi"}, yi{"yi"};
+      changed{"changed"}, hf{"hf"}, sf{"sf"}, vf{"vf"};
+  Halide::Var x{"x"}, y{"y"}, c{"c"}, xo{"xo"}, yo{"yo"}, xi{"xi"}, yi{"yi"},
+      i{"i"};
 
   static constexpr int dx[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
   static constexpr int dy[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
 
   void Schedule(int i) {
+    hsv.reorder(c, x, y).bound(c, 0, 3).unroll(c, 3);
+    hf.compute_at(hsv, x);
+    sf.compute_at(hsv, x);
+    vf.compute_at(hsv, x);
     switch (i) {
     case 0: {
       hsv.compute_root().parallel(y);
@@ -98,10 +104,45 @@ public:
     hsvToRgbFunc();
   }
 
-  void ScheduleForCpu(int i = 0) { Schedule(i); }
+  void ScheduleForCpu(int i = 0) {
+    Schedule(i);
+    sharpen.compile_jit(Halide::get_host_target());
+  }
+
+  bool ScheduleForGpu() {
+    Halide::Target target = findGpuTarget();
+    if (!target.has_gpu_feature()) {
+      printf("No GPU supported");
+      return false;
+    }
+
+    Halide::Var block, thread;
+
+    hsv.reorder(c, x, y).bound(c, 0, 3).unroll(c, 3);
+
+    hsv.compute_root();
+    hsv.gpu_tile(x, y, xo, yo, xi, yi, 32, 32);
+
+    hf.compute_at(hsv, xi);
+    sf.compute_at(hsv, xi);
+    vf.compute_at(hsv, xi);
+
+    delta.compute_root();
+    reductionInter.gpu_tile(y, block, thread, 32);
+    reductionInter.compute_root().update().gpu_tile(y, block, thread, 32);
+
+    // edge.compute_at(sharpen, xo);
+    edge.compute_root().gpu_tile(x, y, xo, yo, xi, yi, 32, 32);
+    // edge.compute_at(lowPass, xo);
+    lowPass.compute_root().gpu_tile(x, y, xo, yo, xi, yi, 32, 32);
+    sharpen.gpu_tile(x, y, xo, yo, xi, yi, 32, 32);
+    sharpen.compile_jit(target);
+
+    return true;
+  }
 
   Halide::Func rgbToHsvFunc() {
-    Halide::Func max_ch, min_ch, diff, hf("hf"), sf("sf"), vf("vf");
+    Halide::Func max_ch, min_ch, diff;
 
     Halide::Expr R = input(x, y, 0) / 255.0f;
     Halide::Expr G = input(x, y, 1) / 255.0f;
@@ -125,11 +166,6 @@ public:
     Halide::Expr S = sf(x, y);
 
     hsv(x, y, c) = Halide::select(c == 0, H, c == 1, S, V);
-
-    hsv.reorder(c, x, y).bound(c, 0, 3).unroll(c, 3);
-    hf.compute_at(hsv, x);
-    sf.compute_at(hsv, x);
-    vf.compute_at(hsv, x);
 
     return hsv;
   }

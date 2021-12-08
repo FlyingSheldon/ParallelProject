@@ -14,10 +14,12 @@ DECLARE_double(sharpness);
 DECLARE_string(impl);
 DECLARE_bool(time);
 DECLARE_int32(schedule);
+DECLARE_bool(gpu);
 
 class Flags {
   const std::unordered_set<std::string> helpFlags{
-      "help", "brightness", "o", "sharpness", "impl", "time", "schedule"};
+      "help", "brightness", "o",        "sharpness",
+      "impl", "time",       "schedule", "gpu"};
 
   void showHelpMessage(const char *argv0) {
     std::cout << argv0 << ": " << gflags::ProgramUsage() << std::endl;

@@ -31,7 +31,9 @@ void HalideImageProc::Brighten(double value) {
 
 void HalideImageProc::Sharpen(double value) {
   SharpenPipeline p(hImg, value);
-  p.ScheduleForCpu(FLAGS_schedule);
+  if (!FLAGS_gpu || !p.ScheduleForGpu()) {
+    p.ScheduleForCpu(FLAGS_schedule);
+  }
   Halide::Buffer<uint8_t> res =
       p.sharpen.realize({hImg.width(), hImg.height(), 3});
   res.copy_to_host();

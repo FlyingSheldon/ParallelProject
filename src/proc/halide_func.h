@@ -43,6 +43,15 @@ private:
       sharpen.parallel(y);
       break;
     }
+    case 3: {
+      hsv.compute_root().parallel(y);
+      delta.compute_root();
+      reductionInter.compute_root().update().parallel(y);
+      edge.store_at(sharpen, yo).compute_at(sharpen, yo);
+      lowPass.store_at(sharpen, yo).compute_at(sharpen, yo);
+      sharpen.split(y, yo, yi, 16).parallel(yo);
+      break;
+    }
     default: {
       hsv.compute_root().parallel(y);
       delta.compute_root();
@@ -61,6 +70,21 @@ public:
 
   SharpenPipeline(Halide::Buffer<uint8_t> &img, double s)
       : width(img.width()), height(img.height()) {
+    input(x, y, c) = img(x, y, c);
+
+    double eth = 0.07;
+    int lpf = 2;
+
+    rgbToHsvFunc();
+    additiveMaginitude();
+    edgeDetect(eth);
+    lowPassFilter(lpf);
+    edgeSharpen(s);
+    hsvToRgbFunc();
+  }
+
+  SharpenPipeline(Halide::Func img, double s, int w, int h)
+      : width(w), height(h) {
     input(x, y, c) = img(x, y, c);
 
     double eth = 0.07;

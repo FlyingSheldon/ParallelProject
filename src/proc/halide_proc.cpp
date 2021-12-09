@@ -25,21 +25,22 @@ void HalideImageProc::PrepareBrighten(double value) {
 }
 
 void HalideImageProc::PrepareSharpen(double value) {
-  sharpenParam = value;
-  sharpenPipeline = std::make_unique<SharpenPipeline>(hImg, value);
-  if (!FLAGS_gpu || !sharpenPipeline->ScheduleForGpu()) {
-    sharpenPipeline->ScheduleForCpu(FLAGS_schedule);
-  }
+  // sharpenParam = value;
+  // sharpenPipeline = std::make_unique<SharpenPipeline>(hImg, value);
+  // if (!FLAGS_gpu || !sharpenPipeline->ScheduleForGpu()) {
+  //   sharpenPipeline->ScheduleForCpu(FLAGS_schedule);
+  // }
 }
 
 void HalideImageProc::Sharpen(double value) {
-  if (value != sharpenParam || !sharpenPipeline) {
-    PrepareSharpen(value);
-  }
-  Halide::Buffer<uint8_t> res =
-      sharpenPipeline->sharpen.realize({hImg.width(), hImg.height(), 3});
-  res.copy_to_host();
-  std::swap(res, hImg);
+  // if (value != sharpenParam || !sharpenPipeline) {
+  //   PrepareSharpen(value);
+  // }
+  // Halide::Buffer<uint8_t> res =
+  //     sharpenPipeline->sharpen.realize({hImg.width(), hImg.height(), 3});
+  // res.copy_to_host();
+  // std::swap(res, hImg);
+  SharpenPipeline sp(hImg, value, 0);
 }
 
 bool HalideImageProc::IsSupported() const { return true; }

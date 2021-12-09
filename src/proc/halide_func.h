@@ -1,4 +1,5 @@
 #pragma once
+#include "util/timer.h"
 #include <Halide.h>
 #include <vector>
 
@@ -102,6 +103,77 @@ public:
     lowPassFilter(lpf);
     edgeSharpen(s);
     hsvToRgbFunc();
+  }
+
+  SharpenPipeline(Halide::Buffer<uint8_t> &img, double s, int)
+      : width(img.width()), height(img.height()) {
+    double eth = 0.07;
+    int lpf = 2;
+
+    std::cout << img.width() << " " << img.height() << std::endl;
+
+    input(x, y, c) = img(x, y, c);
+
+    rgbToHsvFunc();
+    hsv.reorder(c, x, y).bound(c, 0, 3).unroll(c, 3);
+    hf.compute_at(hsv, x);
+    sf.compute_at(hsv, x);
+    vf.compute_at(hsv, x);
+    hsv.parallel(y);
+    hsv.compile_jit(Halide::get_host_target());
+    auto t1 = Timer::Now();
+    Halide::Buffer<float> res1 = hsv.realize({width, height, 3});
+    auto t2 = Timer::Now();
+
+    hsv = Halide::Func();
+    hsv(x, y, c) = res1(x, y, c);
+    additiveMaginitude();
+    reductionInter.compute_root().update().parallel(y);
+    reductionInter.compile_jit(Halide::get_host_target());
+    auto t3 = Timer::Now();
+    Halide::Buffer<float> res2 = delta.realize({1, 1, 1});
+    auto t4 = Timer::Now();
+
+    hsv = Halide::Func();
+    delta = Halide::Func();
+    hsv(x, y, c) = res1(x, y, c);
+    delta(x, y) = res2(x, y);
+    edgeDetect(eth);
+    lowPassFilter(lpf);
+    edgeSharpen(s);
+    hsvToRgbFunc();
+    edge.compute_at(lowPass, xo);
+    lowPass.compute_root().tile(x, y, xo, yo, xi, yi, 128, 128).parallel(yo);
+
+    lowPass.compile_jit(Halide::get_host_target());
+
+    auto t5 = Timer::Now();
+    Halide::Buffer<uint8_t> res3 = lowPass.realize({width, height, 1});
+    auto t6 = Timer::Now();
+
+    hsv = Halide::Func();
+    delta = Halide::Func();
+    lowPass = Halide::Func();
+
+    hsv(x, y, c) = res1(x, y, c);
+    delta(x, y) = res2(x, y);
+    lowPass(x, y) = res3(x, y);
+    sharpen.parallel(y);
+    sharpen.compile_jit(Halide::get_host_target());
+    auto t7 = Timer::Now();
+    Halide::Buffer<uint8_t> res4 = sharpen.realize({width, height, 3});
+    auto t8 = Timer::Now();
+
+    std::cout << "RGB to HSV:    " << Timer::DurationInMillisecond(t1, t2)
+              << "ms" << std::endl;
+    std::cout << "Reduction:     " << Timer::DurationInMillisecond(t3, t4)
+              << "ms" << std::endl;
+    std::cout << "Edge&LPF:      " << Timer::DurationInMillisecond(t5, t6)
+              << "ms" << std::endl;
+    std::cout << "Sharpen&toHsv: " << Timer::DurationInMillisecond(t7, t8)
+              << "ms" << std::endl;
+
+    std::swap(res4, img);
   }
 
   void ScheduleForCpu(int i = 0) {

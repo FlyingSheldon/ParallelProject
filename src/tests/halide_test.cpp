@@ -1,10 +1,10 @@
 #include "image/image.h"
-#include "proc/halide_func.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <iostream>
 
 #ifdef PP_USE_HALIDE
+#include "proc/halide_func.h"
 #include "proc/halide_proc.h"
 
 TEST(HalideTest, BrightenTest) {
@@ -34,12 +34,12 @@ TEST(HalideTest, BrightenTest) {
     for (int x = 0; x < img.GetWidth(); x++) {
       auto p = img.GetPixelData(x, y);
       auto p2 = img2.GetPixelData(x, y);
-      ASSERT_EQ((int)p[0], (int)p2[0])
-          << "Pixel " << x << " " << y << " red not equal";
-      ASSERT_EQ((int)p[1], (int)p2[1])
-          << "Pixel " << x << " " << y << " green not equal";
-      ASSERT_EQ((int)p[2], (int)p2[2])
-          << "Pixel " << x << " " << y << " blue not equal";
+      ASSERT_EQ((int)p[0], (int)p2[0]) << "Pixel " << x << " " << y
+                                       << " red not equal";
+      ASSERT_EQ((int)p[1], (int)p2[1]) << "Pixel " << x << " " << y
+                                       << " green not equal";
+      ASSERT_EQ((int)p[2], (int)p2[2]) << "Pixel " << x << " " << y
+                                       << " blue not equal";
     }
   }
 }
@@ -71,12 +71,12 @@ TEST(HalideTest, SharpenTest) {
     for (int x = 0; x < img.GetWidth(); x++) {
       auto p = img.GetPixelData(x, y);
       auto p2 = img2.GetPixelData(x, y);
-      ASSERT_NEAR((int)p[0], (int)p2[0], near)
-          << "Pixel " << x << " " << y << " red not equal";
-      ASSERT_NEAR((int)p[1], (int)p2[1], near)
-          << "Pixel " << x << " " << y << " green not equal";
-      ASSERT_NEAR((int)p[2], (int)p2[2], near)
-          << "Pixel " << x << " " << y << " blue not equal";
+      ASSERT_NEAR((int)p[0], (int)p2[0], near) << "Pixel " << x << " " << y
+                                               << " red not equal";
+      ASSERT_NEAR((int)p[1], (int)p2[1], near) << "Pixel " << x << " " << y
+                                               << " green not equal";
+      ASSERT_NEAR((int)p[2], (int)p2[2], near) << "Pixel " << x << " " << y
+                                               << " blue not equal";
     }
   }
 }
@@ -114,10 +114,10 @@ TEST(HalideTest, FuncTest) {
     for (int x = 0; x < img2.GetWidth(); x++) {
       auto p2 = img2.GetPixelData(x, y);
 
-      ASSERT_NEAR((int)p2[0], ptr[h], near)
-          << "Pixel " << x << " " << y << " R not equal";
-      ASSERT_NEAR((int)p2[1], ptr[s], near)
-          << "Pixel " << x << " " << y << " G not equal";
+      ASSERT_NEAR((int)p2[0], ptr[h], near) << "Pixel " << x << " " << y
+                                            << " R not equal";
+      ASSERT_NEAR((int)p2[1], ptr[s], near) << "Pixel " << x << " " << y
+                                            << " G not equal";
       ASSERT_NEAR((int)p2[2], ptr[v], near)
           << "Pixel " << x << " " << y << " B not equal"
           << "R:" << (int)p2[0] << " G:" << (int)p2[1] << " B:" << (int)p2[2];

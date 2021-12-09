@@ -1,6 +1,8 @@
+#include "../util/timer.h"
 #include "cuda_proc.h"
 #include "proc.cuh"
 #include <cstdio>
+#include <iostream>
 #include <vector>
 
 void cudaSayHi() { sayHi<<<1, 2>>>(); }
@@ -99,6 +101,8 @@ void cudaSharpen(uint8_t *img, size_t pixelSize, size_t width, size_t height,
   initialVmms.min = 255;
   initialVmms.sum = 0;
 
+  auto memPreBegin = Timer::Now();
+
   cudaMalloc(&deviceImg, size * pixelSize * sizeof(uint8_t));
   cudaMalloc(&deviceHsv, size * 3 * sizeof(double));
   cudaMalloc(&deviceVmms, sizeof(ValueMinMaxSum));
@@ -109,29 +113,56 @@ void cudaSharpen(uint8_t *img, size_t pixelSize, size_t width, size_t height,
   cudaMemcpy(deviceVmms, &initialVmms, sizeof(ValueMinMaxSum),
              cudaMemcpyHostToDevice);
 
+  auto memPreEnd = Timer::Now();
+
   dim3 blockDim(kBlockEdgeSize, kBlockEdgeSize, 1);
   dim3 gridDim((width + (blockDim.x - 2) - 1) / (blockDim.x - 2),
                (height + (blockDim.y - 2) - 1) / (blockDim.y - 2));
 
+  auto reductionBegin = Timer::Now();
   rgbToHsvAndDeltaReduce<kThreadPerBlock><<<blockPerGrid, kThreadPerBlock>>>(
       deviceImg, deviceHsv, size, deviceVmms);
 
   cudaDeviceSynchronize();
+  auto reductionEnd = Timer::Now();
+  auto edgeDetectBegin = Timer::Now();
 
   edgeDetect<<<gridDim, blockDim>>>(deviceHsv, deviceEdges, width, height, eth);
 
   cudaDeviceSynchronize();
+  auto edgeDetectEnd = Timer::Now();
+  auto finalBegin = Timer::Now();
 
   edgeSharpen<<<gridDim, blockDim>>>(deviceHsv, width, height, value, eth, lpf,
                                      deviceEdges, deviceVmms, deviceImg);
 
+  cudaDeviceSynchronize();
+  auto finalEnd = Timer::Now();
+
+  auto memPostBegin = Timer::Now();
   cudaMemcpy(img, deviceImg, size * pixelSize * sizeof(uint8_t),
              cudaMemcpyDeviceToHost);
   cudaMemcpy(hsv, deviceHsv, size * pixelSize * sizeof(double),
              cudaMemcpyDeviceToHost);
-
   cudaFree(deviceImg);
   cudaFree(deviceEdges);
   cudaFree(deviceHsv);
   cudaFree(deviceVmms);
+  auto memPostEnd = Timer::Now();
+
+  std::cout << "Memory Pre time: "
+            << Timer::DurationInMillisecond(memPreBegin, memPreEnd) << " ms"
+            << std::endl;
+  std::cout << "Reduction time: "
+            << Timer::DurationInMillisecond(reductionBegin, reductionEnd)
+            << " ms" << std::endl;
+  std::cout << "Edge detect time: "
+            << Timer::DurationInMillisecond(edgeDetectBegin, edgeDetectEnd)
+            << " ms" << std::endl;
+  std::cout << "Final time: "
+            << Timer::DurationInMillisecond(finalBegin, finalEnd) << " ms"
+            << std::endl;
+  std::cout << "Memory Post time: "
+            << Timer::DurationInMillisecond(memPostBegin, memPostEnd) << " ms"
+            << std::endl;
 }

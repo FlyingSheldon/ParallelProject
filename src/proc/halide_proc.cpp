@@ -35,7 +35,7 @@ void HalideImageProc::PrepareSharpen(double value) {
   sharpenParam = value;
   sharpenPipeline = std::make_unique<SharpenPipeline>(hImg, value);
   if (!FLAGS_gpu || !sharpenPipeline->ScheduleForGpu()) {
-    sharpenPipeline->ScheduleForCpu();
+    sharpenPipeline->ScheduleForCpu(FLAGS_schedule);
   }
 }
 

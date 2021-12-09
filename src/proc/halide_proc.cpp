@@ -7,29 +7,22 @@
 HalideImageProc::HalideImageProc() {}
 
 void HalideImageProc::Brighten(double value) {
-  Halide::Func brighter;
-
-  Halide::Var x, y, c;
-
-  Halide::Expr v = hImg(x, y, c);
-
-  v = Halide::cast<float>(v);
-
-  v = v * static_cast<float>(value);
-
-  v = Halide::min(v, 255.0f);
-
-  v = Halide::cast<uint8_t>(v);
-
-  brighter(x, y, c) = v;
-
-  Halide::Buffer<uint8_t> output =
-      brighter.realize({hImg.width(), hImg.height(), hImg.channels()});
-
-  std::swap(hImg, output);
+  if (value != brightenParam || !brightenPipeline) {
+    PrepareBrighten(value);
+  }
+  Halide::Buffer<uint8_t> res =
+      brightenPipeline->brighten.realize({hImg.width(), hImg.height(), 3});
+  res.copy_to_host();
+  std::swap(res, hImg);
 }
 
-void HalideImageProc::PrepareBrighten(double value) {}
+void HalideImageProc::PrepareBrighten(double value) {
+  brightenParam = value;
+  brightenPipeline = std::make_unique<BrightenPipeline>(hImg, value);
+  if (!FLAGS_gpu || !brightenPipeline->ScheduleForGpu()) {
+    brightenPipeline->ScheduleForCpu();
+  }
+}
 
 void HalideImageProc::PrepareSharpen(double value) {
   sharpenParam = value;

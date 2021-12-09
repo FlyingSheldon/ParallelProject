@@ -40,6 +40,9 @@ private:
   std::unique_ptr<SharpenPipeline> sharpenPipeline;
   double sharpenParam = -1.0;
 
+  std::unique_ptr<BrightenPipeline> brightenPipeline;
+  double brightenParam = -1.0;
+
   Image img;
 #endif
 };

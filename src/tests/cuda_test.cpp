@@ -8,8 +8,8 @@
 #include "proc/cuda_proc.h"
 
 TEST(CudaTest, BrightenTest) {
-  std::cerr << "Please check test path: " << std::filesystem::current_path()
-            << std::endl;
+  // std::cout << "Please check test path: " << std::filesystem::current_path()
+  //           << std::endl;
 
   CudaImageProc cudaProc;
   LinearImageProc linearProc;
@@ -115,9 +115,6 @@ TEST(CudaTest, BrightenTest) {
 // }
 
 TEST(CudaTest, SharpenTest) {
-  std::cout << "Please check test path: " << std::filesystem::current_path()
-            << std::endl;
-
   CudaImageProc cudaProc;
   LinearImageProc linearProc;
 

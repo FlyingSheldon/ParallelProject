@@ -19,3 +19,7 @@ ImageProc::ImageIOResult HalideImageProc::SaveImage(std::string filename) {
 }
 
 Image *HalideImageProc::GetImage() { return nullptr; }
+
+void HalideImageProc::PrepareBrighten(double value) {}
+
+void HalideImageProc::PrepareSharpen(double value) {}

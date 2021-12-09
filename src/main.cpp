@@ -44,12 +44,14 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  proc->PrepareBrighten(conf.brightness);
   auto brightStart = Timer::Now();
   if (conf.brightness != 1.0) {
     proc->Brighten(conf.brightness);
   }
   auto brightEnd = Timer::Now();
 
+  proc->PrepareSharpen(conf.brightness);
   auto sharpStart = Timer::Now();
   if (conf.sharpness != 0.0) {
     proc->Sharpen(conf.sharpness);

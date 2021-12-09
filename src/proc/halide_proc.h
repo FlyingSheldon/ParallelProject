@@ -17,6 +17,8 @@ public:
   virtual ImageIOResult LoadImage(std::string filename) override;
   virtual ImageIOResult SaveImage(std::string filename) override;
   virtual Image *GetImage() override;
+  virtual void PrepareBrighten(double value) override;
+  virtual void PrepareSharpen(double value) override;
 
 #ifdef PP_USE_HALIDE
   virtual Halide::Buffer<float> rgbToHsv();
@@ -34,7 +36,10 @@ public:
 private:
   Halide::Buffer<uint8_t> hImg;
   Halide::Buffer<float> hHSV;
-  std::unique_ptr<SharpenPipeline> p;
+
+  std::unique_ptr<SharpenPipeline> sharpenPipeline;
+  double sharpenParam = -1.0;
+
   Image img;
 #endif
 };

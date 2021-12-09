@@ -19,6 +19,8 @@ public:
     return Image::ImageError("Not implemented");
   }
   virtual Image *GetImage() { return nullptr; }
+  virtual void PrepareSharpen(double value) {}
+  virtual void PrepareBrighten(double value) {}
 };
 
 class LinearImageProc : public ImageProc {

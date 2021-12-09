@@ -29,13 +29,22 @@ void HalideImageProc::Brighten(double value) {
   std::swap(hImg, output);
 }
 
+void HalideImageProc::PrepareBrighten(double value) {}
+
+void HalideImageProc::PrepareSharpen(double value) {
+  sharpenParam = value;
+  sharpenPipeline = std::make_unique<SharpenPipeline>(hImg, value);
+  if (!FLAGS_gpu || !sharpenPipeline->ScheduleForGpu()) {
+    sharpenPipeline->ScheduleForCpu();
+  }
+}
+
 void HalideImageProc::Sharpen(double value) {
-  // SharpenPipeline p(hImg, value);
-  // if (!FLAGS_gpu || !p.ScheduleForGpu()) {
-  //   p.ScheduleForCpu(FLAGS_schedule);
-  // }
+  if (value != sharpenParam || !sharpenPipeline) {
+    PrepareSharpen(value);
+  }
   Halide::Buffer<uint8_t> res =
-      p->sharpen.realize({hImg.width(), hImg.height(), 3});
+      sharpenPipeline->sharpen.realize({hImg.width(), hImg.height(), 3});
   res.copy_to_host();
   std::swap(res, hImg);
 }
@@ -44,10 +53,6 @@ bool HalideImageProc::IsSupported() const { return true; }
 
 ImageProc::ImageIOResult HalideImageProc::LoadImage(std::string filename) {
   hImg = Halide::Tools::load_image(filename);
-  p = std::make_unique<SharpenPipeline>(hImg, 1.0);
-  if (!FLAGS_gpu || !p->ScheduleForGpu()) {
-    p->ScheduleForCpu(FLAGS_schedule);
-  }
   return {};
 }
 

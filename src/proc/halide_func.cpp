@@ -35,8 +35,5 @@ Halide::Target findGpuTarget() {
     }
   }
 
-  //   printf("Requested GPU(s) are not supported. (Do you have the proper
-  //   hardware "
-  //          "and/or driver installed?)\n");
   return target;
 }

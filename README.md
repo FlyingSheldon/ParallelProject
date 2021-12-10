@@ -87,6 +87,8 @@ build/src/pp --help
 
 Then you can move `build/src/pp` anywhere to execute it.
 
+The Dockerfile in the root directory can be a good reference of how to build pp on Linux.
+
 ## How to use pp
 
 Run `pp --help` for helper message.
@@ -98,6 +100,14 @@ pp input.jpg -o out.jpg --brightness 1.5 --sharpness 0.5 --impl ${IMPLEMENTATION
 ```
 
 The `${IMPLEMENTATION}` can be `linear`, `halide` or `cuda`. Whether the implementation is supported is determined at build time. If a implementation is not supported in the binary, you will get a message if you specify that implementation. 
+
+If you want to set the number of threads halide is using, set the environment variable `HL_NUM_THREADS`. For example 
+
+```shell
+HL_NUM_THREADS=4 pp test.jpg -o gg.jpg --impl halide --brightness 1.2
+```
+
+
 
 ## Stage UI
 

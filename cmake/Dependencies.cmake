@@ -31,8 +31,8 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # ---[ Halide
-find_package(LLVM REQUIRED CONFIG PATHS /usr/local/Cellar/)
-find_package(Halide QUIET)
+find_package(LLVMD CONFIG PATHS /usr/local/Cellar/)
+find_package(Halide)
 if( Halide_FOUND )
     find_package(PNG REQUIRED)
     list(APPEND pp_LINKER_LIBS PRIVATE Halide::Halide Halide::Tools ${PNG_LIBRARY})

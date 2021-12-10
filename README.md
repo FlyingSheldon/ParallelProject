@@ -1,6 +1,5 @@
 # ParallelProject (PP)
 
-
 ## How to build
 
 `PP` has 3 main dependencies: LLVM, Halide and CUDA. Not all dependencies are required, either `Halide` or `CUDA` can be optional.
@@ -8,6 +7,8 @@
 The minimum of LLVM version required depends on the Halide version, the oldest version we've tested is Halide 10.0.0 with LLVM 9.
 
 Also, `cmake` is required to build `PP`. Visit [here](https://cmake.org/download/) for how to install `cmake`.
+
+Compiler requirement: C++17 needs to be supported.
 
 ### macOS
 
@@ -43,11 +44,9 @@ build/src/pp --help
 
 Then you can move `build/src/pp` anywhere to execute it.
 
-
-
 ### Linux
 
-First make sure the dependencies of Halide is installed: `zlib`, `libjpeg` and `libpng`. 
+First make sure the dependencies of Halide is installed: `zlib`, `libjpeg` and `libpng`.
 
 For example, using apt:
 
@@ -55,7 +54,7 @@ For example, using apt:
 apt-get install libjpeg-dev libpng-dev
 ```
 
-Install [LLVM](https://llvm.org/) via package manager all binaries. 
+Install [LLVM](https://llvm.org/) via package manager all binaries.
 
 Install [Halide](https://halide-lang.org/) via binaries of source.
 
@@ -71,7 +70,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake -S . -DCMAKE_BUILD_TYPE:STRING=Release -Dllvm_DIR=${LLVM_PATH}/lib/cmake/llvm -DHalide_DIR=${HALIDE_PATH}/lib/cmake/Halide -DHalideHelpers_DIR=${HALIDE_PATH}/lib/cmake/HalideHelpers  -B build
 ```
 
-CUDA will be auto detected if you have the environment. You can run `nvcc` to check. 
+CUDA will be auto detected if you have the environment. You can run `nvcc` to check.
 
 Build the project:
 
@@ -99,15 +98,13 @@ Generally, you can run something like:
 pp input.jpg -o out.jpg --brightness 1.5 --sharpness 0.5 --impl ${IMPLEMENTATION}
 ```
 
-The `${IMPLEMENTATION}` can be `linear`, `halide` or `cuda`. Whether the implementation is supported is determined at build time. If a implementation is not supported in the binary, you will get a message if you specify that implementation. 
+The `${IMPLEMENTATION}` can be `linear`, `halide` or `cuda`. Whether the implementation is supported is determined at build time. If a implementation is not supported in the binary, you will get a message if you specify that implementation.
 
-If you want to set the number of threads halide is using, set the environment variable `HL_NUM_THREADS`. For example 
+If you want to set the number of threads halide is using, set the environment variable `HL_NUM_THREADS`. For example
 
 ```shell
 HL_NUM_THREADS=4 pp test.jpg -o gg.jpg --impl halide --brightness 1.2
 ```
-
-
 
 ## Stage UI
 
@@ -118,4 +115,3 @@ cd stage
 npm install
 npm run dev
 ```
-

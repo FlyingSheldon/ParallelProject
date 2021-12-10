@@ -3,6 +3,8 @@
 Team member: Jiahua Huang (jiahuah), Xinna Guo (xinnag)
 Webpage: https://flyingsheldon.github.io/ParallelProject/
 
+![](https://bnz05pap001files.storage.live.com/y4mOanRC0QpHNDmDdHJAtWYnqxxjXOt8jZB5M0ebjp8Mz6T1cC34KDaPDLJ76OiCQ4-o6Lxo2SMv3I8hLSS8KnRXHUc85RJe5o85zngILfGkouJxrX2x5jxT0lHB2p11Nv5tEwM0_O1zHPkC92oJPh1gLFc3dEnK6noKz8uAm8IhEsNCEjlO4kp7E_2cOZYnr2F?width=534&height=300&cropmode=none)
+
 ## 1 Summary
 We are going to implement several image processing algorithms including sharpening and highlight/shadow adjustment using Halide and Cuda on GPU.
 

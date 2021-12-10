@@ -67,3 +67,5 @@ GPU is designed for image processing related problems and Halide is designed to 
 ## Project Milestone
 The project milestone report can be found [here](https://docs.google.com/document/d/1HQVhltZfXv3lvUDZ7W8OBGb-d31G9bimXVihOkDngkw/edit?usp=sharing).
 
+## Project Final Report
+The project final report can be found [here](https://docs.google.com/document/d/1bB0C5m6Li3Vumq7ceqmKENrCzsZEWFqbRofSQxDfkkw/edit?usp=sharing).

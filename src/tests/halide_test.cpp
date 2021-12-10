@@ -1,10 +1,10 @@
 #include "image/image.h"
-#include "proc/halide_func.h"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <iostream>
 
 #ifdef PP_USE_HALIDE
+#include "proc/halide_func.h"
 #include "proc/halide_proc.h"
 
 TEST(HalideTest, BrightenTest) {
